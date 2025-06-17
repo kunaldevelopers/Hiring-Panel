@@ -34,14 +34,10 @@ const ApplicationForm = () => {
   useEffect(() => {
     fetchJobPositions();
   }, []);
-
   const fetchJobPositions = async () => {
     try {
-      const response = await jobPositionAPI.getAllPositions();
-      const activePositions = response.data.filter(
-        (position) => position.isActive && position.availablePositions > 0
-      );
-      setJobPositions(activePositions);
+      const response = await jobPositionAPI.getPositions();
+      setJobPositions(response.data);
     } catch (error) {
       console.error("Fetch job positions error:", error);
       // Fallback to default departments if API fails

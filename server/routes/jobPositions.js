@@ -7,7 +7,10 @@ const router = express.Router();
 // Get all active job positions (public route)
 router.get("/", async (req, res) => {
   try {
-    const positions = await JobPosition.find({ isActive: true }).sort({
+    const positions = await JobPosition.find({
+      isActive: true,
+      $expr: { $gt: ["$totalPositions", "$filledPositions"] },
+    }).sort({
       createdAt: -1,
     });
 

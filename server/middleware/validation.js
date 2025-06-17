@@ -1,5 +1,7 @@
 // Input validation middleware
-const validateApplicationInput = (req, res, next) => {
+const JobPosition = require("../models/JobPosition");
+
+const validateApplicationInput = async (req, res, next) => {
   const { name, email, phone, department } = req.body;
   const errors = [];
 
@@ -26,29 +28,30 @@ const validateApplicationInput = (req, res, next) => {
     errors.push("Phone number must be exactly 10 digits");
   }
 
-  // Department validation
-  const validDepartments = [
-    "Cyber Security",
-    "Web Dev",
-    "App Dev",
-    "Full Stack",
-    "Digital Marketing",
-    "AI & Automation",
-    "Sales Executive",
-    "Other",
-  ];
+  // Department validation - Check against active job positions in database
+  try {
+    const activePositions = await JobPosition.find({
+      isActive: true,
+      $expr: { $gt: ["$totalPositions", "$filledPositions"] },
+    });
 
-  if (!department || !validDepartments.includes(department)) {
-    errors.push("Please select a valid department");
-  }
+    const validDepartments = activePositions.map((pos) => pos.title);
 
-  // Other department validation
-  if (
-    department === "Other" &&
-    (!req.body.otherDepartment || req.body.otherDepartment.trim().length === 0)
-  ) {
-    errors.push('Please specify the department when selecting "Other"');
+    if (!department || !validDepartments.includes(department)) {
+      errors.push("Please select a valid job position");
+    }
+  } catch (error) {
+    console.error("Error validating department:", error);
+    // Fallback validation - allow any non-empty string if database check fails
+    if (
+      !department ||
+      typeof department !== "string" ||
+      department.trim().length === 0
+    ) {
+      errors.push("Department is required");
+    }
   }
+  // Remove the "Other" department validation since we're using dynamic positions now
 
   if (errors.length > 0) {
     return res.status(400).json({

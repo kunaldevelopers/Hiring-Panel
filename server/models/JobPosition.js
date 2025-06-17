@@ -46,6 +46,10 @@ jobPositionSchema.virtual("availablePositions").get(function () {
   return this.totalPositions - this.filledPositions;
 });
 
+// Ensure virtual fields are serialized
+jobPositionSchema.set("toJSON", { virtuals: true });
+jobPositionSchema.set("toObject", { virtuals: true });
+
 // Update the updatedAt field before saving
 jobPositionSchema.pre("save", function (next) {
   this.updatedAt = Date.now();
