@@ -37,6 +37,8 @@ export const authAPI = {
   adminLogin: (credentials) => api.post("/auth/admin/login", credentials),
   changePassword: (passwordData) =>
     api.post("/auth/change-password", passwordData),
+  changeUsername: (usernameData) =>
+    api.post("/auth/change-username", usernameData),
   changeAdminPassword: (passwordData) =>
     api.post("/auth/admin/change-password", passwordData),
 };

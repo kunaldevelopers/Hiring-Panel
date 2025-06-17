@@ -8,6 +8,7 @@ const CandidateProfile = () => {
   const [application, setApplication] = useState(null);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [showUsernameChange, setShowUsernameChange] = useState(false);
   const [updateData, setUpdateData] = useState({
     experience: "",
     pastCompany: "",
@@ -16,11 +17,15 @@ const CandidateProfile = () => {
     resume: null,
     aadharCard: null,
   });
-
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
     newPassword: "",
     confirmPassword: "",
+  });
+
+  const [usernameData, setUsernameData] = useState({
+    newUsername: "",
+    password: "",
   });
 
   useEffect(() => {
@@ -58,6 +63,14 @@ const CandidateProfile = () => {
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswordData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleUsernameChange = (e) => {
+    const { name, value } = e.target;
+    setUsernameData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -129,6 +142,49 @@ const CandidateProfile = () => {
     }
   };
 
+  const handleUsernameUpdate = async (e) => {
+    e.preventDefault();
+
+    if (!usernameData.newUsername.trim()) {
+      toast.error("Username cannot be empty");
+      return;
+    }
+
+    if (usernameData.newUsername.length < 3) {
+      toast.error("Username must be at least 3 characters");
+      return;
+    }
+
+    if (!usernameData.password) {
+      toast.error("Password is required to change username");
+      return;
+    }
+
+    try {
+      await authAPI.changeUsername({
+        currentUsername: localStorage.getItem("username"),
+        newUsername: usernameData.newUsername,
+        password: usernameData.password,
+      });
+
+      // Update localStorage with new username
+      localStorage.setItem("username", usernameData.newUsername);
+
+      toast.success("Username changed successfully");
+      setShowUsernameChange(false);
+      setUsernameData({
+        newUsername: "",
+        password: "",
+      });
+
+      // Refresh profile to show updated username
+      fetchProfile();
+    } catch (error) {
+      console.error("Change username error:", error);
+      toast.error(error.response?.data?.message || "Failed to change username");
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "Pending":
@@ -176,13 +232,19 @@ const CandidateProfile = () => {
                 My Application
               </h1>
               <p className="text-gray-600">Welcome back, {application.name}</p>
-            </div>
+            </div>{" "}
             <div className="flex space-x-3">
               <button
                 onClick={() => setShowUpdateForm(!showUpdateForm)}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300"
               >
                 Update Profile
+              </button>
+              <button
+                onClick={() => setShowUsernameChange(!showUsernameChange)}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300"
+              >
+                Change Username
               </button>
               <button
                 onClick={() => setShowPasswordChange(!showPasswordChange)}
@@ -242,10 +304,24 @@ const CandidateProfile = () => {
             <div>
               <p className="text-sm font-medium text-gray-500">Email</p>
               <p className="text-gray-900">{application.email}</p>
-            </div>
+            </div>{" "}
             <div>
               <p className="text-sm font-medium text-gray-500">Phone</p>
               <p className="text-gray-900">{application.phone}</p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Username</p>
+              <div className="flex items-center space-x-2">
+                <p className="text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded text-sm">
+                  {application.username}
+                </p>
+                <button
+                  onClick={() => setShowUsernameChange(true)}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  Change
+                </button>
+              </div>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Department</p>
@@ -325,26 +401,26 @@ const CandidateProfile = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Experience
-                </label>
+                </label>{" "}
                 <textarea
                   name="experience"
                   value={updateData.experience}
                   onChange={handleUpdateChange}
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                   placeholder="Describe your experience"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Past Company
-                </label>
+                </label>{" "}
                 <input
                   type="text"
                   name="pastCompany"
                   value={updateData.pastCompany}
                   onChange={handleUpdateChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                   placeholder="Previous company name"
                 />
               </div>{" "}
@@ -428,6 +504,99 @@ const CandidateProfile = () => {
           </div>
         )}
 
+        {/* Change Username Form */}
+        {showUsernameChange && (
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Change Username
+            </h2>
+            <form onSubmit={handleUsernameUpdate} className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-5 w-5 text-blue-400"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-blue-700">
+                      <strong>Current Username:</strong> {application?.username}
+                    </p>
+                    <p className="text-sm text-blue-600 mt-1">
+                      Choose a unique username that will be used for future
+                      logins.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  New Username
+                </label>{" "}
+                <input
+                  type="text"
+                  name="newUsername"
+                  value={usernameData.newUsername}
+                  onChange={handleUsernameChange}
+                  required
+                  minLength="3"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  placeholder="Enter your new username"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Username must be at least 3 characters long
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Current Password (for verification)
+                </label>{" "}
+                <input
+                  type="password"
+                  name="password"
+                  value={usernameData.password}
+                  onChange={handleUsernameChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  placeholder="Enter your current password"
+                />
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-300"
+                >
+                  Change Username
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUsernameChange(false);
+                    setUsernameData({
+                      newUsername: "",
+                      password: "",
+                    });
+                  }}
+                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition duration-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
         {/* Change Password Form */}
         {showPasswordChange && (
           <div className="bg-white rounded-lg shadow-md p-6">
@@ -435,6 +604,7 @@ const CandidateProfile = () => {
               Change Password
             </h2>
             <form onSubmit={handlePasswordUpdate} className="space-y-4">
+              {" "}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Current Password
@@ -445,10 +615,9 @@ const CandidateProfile = () => {
                   value={passwordData.oldPassword}
                   onChange={handlePasswordChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   New Password
@@ -460,10 +629,9 @@ const CandidateProfile = () => {
                   onChange={handlePasswordChange}
                   required
                   minLength="6"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Confirm New Password
@@ -475,10 +643,9 @@ const CandidateProfile = () => {
                   onChange={handlePasswordChange}
                   required
                   minLength="6"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 />
               </div>
-
               <div className="flex space-x-3">
                 <button
                   type="submit"

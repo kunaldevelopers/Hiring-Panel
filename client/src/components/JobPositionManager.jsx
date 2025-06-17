@@ -273,13 +273,13 @@ const JobPositionManager = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Position Title
-                </label>
+                </label>{" "}
                 <select
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 >
                   <option value="">Select a position</option>
                   <option value="Cyber Security">Cyber Security</option>
@@ -296,14 +296,14 @@ const JobPositionManager = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description
-                </label>
+                </label>{" "}
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
                   required
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                   placeholder="Brief description of the position"
                 />
               </div>
@@ -311,7 +311,7 @@ const JobPositionManager = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Total Positions Available
-                </label>
+                </label>{" "}
                 <input
                   type="number"
                   name="totalPositions"
@@ -319,7 +319,7 @@ const JobPositionManager = () => {
                   onChange={handleInputChange}
                   min="1"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 />
               </div>
 
@@ -329,6 +329,7 @@ const JobPositionManager = () => {
                 </label>
                 {formData.requirements.map((requirement, index) => (
                   <div key={index} className="flex space-x-2 mb-2">
+                    {" "}
                     <input
                       type="text"
                       value={requirement}
@@ -336,7 +337,7 @@ const JobPositionManager = () => {
                         handleRequirementChange(index, e.target.value)
                       }
                       placeholder={`Requirement ${index + 1}`}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                     />
                     {formData.requirements.length > 1 && (
                       <button

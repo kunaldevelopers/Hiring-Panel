@@ -178,4 +178,58 @@ router.post(
   }
 );
 
+// Change username
+router.post("/change-username", async (req, res) => {
+  try {
+    const { currentUsername, newUsername, password } = req.body;
+
+    // Validate required fields
+    if (!currentUsername || !newUsername || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Validate new username length
+    if (newUsername.length < 3) {
+      return res
+        .status(400)
+        .json({ message: "Username must be at least 3 characters long" });
+    }
+
+    // Find current candidate
+    const candidate = await Application.findOne({ username: currentUsername });
+    if (!candidate) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, candidate.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    // Check if new username already exists
+    const existingUser = await Application.findOne({
+      username: newUsername,
+    });
+    if (
+      existingUser &&
+      existingUser._id.toString() !== candidate._id.toString()
+    ) {
+      return res.status(409).json({ message: "Username already exists" });
+    }
+
+    // Update username
+    candidate.username = newUsername;
+    await candidate.save();
+
+    res.json({
+      message: "Username changed successfully",
+      newUsername: newUsername,
+    });
+  } catch (error) {
+    console.error("Change username error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;

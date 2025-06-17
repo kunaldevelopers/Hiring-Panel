@@ -291,13 +291,13 @@ const AdminDashboard = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Status Filter
-                  </label>
+                  </label>{" "}
                   <select
                     value={filters.status}
                     onChange={(e) =>
                       handleFilterChange("status", e.target.value)
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                   >
                     <option value="all">All Status</option>
                     <option value="Pending">Pending</option>
@@ -310,7 +310,7 @@ const AdminDashboard = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Search
-                  </label>
+                  </label>{" "}
                   <input
                     type="text"
                     value={filters.search}
@@ -318,20 +318,20 @@ const AdminDashboard = () => {
                       handleFilterChange("search", e.target.value)
                     }
                     placeholder="Search by name, email, or phone"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Per Page
-                  </label>
+                  </label>{" "}
                   <select
                     value={filters.limit}
                     onChange={(e) =>
                       handleFilterChange("limit", parseInt(e.target.value))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                   >
                     <option value={10}>10</option>
                     <option value={25}>25</option>
@@ -408,6 +408,7 @@ const AdminDashboard = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
+                            {" "}
                             <select
                               value={application.status}
                               onChange={(e) =>
@@ -416,14 +417,13 @@ const AdminDashboard = () => {
                                   e.target.value
                                 )
                               }
-                              className="text-xs border border-gray-300 rounded px-2 py-1"
+                              className="text-xs border border-gray-300 rounded px-2 py-1 text-gray-900"
                             >
                               <option value="Pending">Pending</option>
                               <option value="Accepted">Accepted</option>
                               <option value="Rejected">Rejected</option>
                               <option value="Scheduled">Scheduled</option>
                             </select>
-
                             <button
                               onClick={() => {
                                 setSelectedApplication(application);
@@ -433,7 +433,6 @@ const AdminDashboard = () => {
                             >
                               Schedule
                             </button>
-
                             <button
                               onClick={() => handleViewBiodata(application)}
                               className="text-green-600 hover:text-green-900 text-xs"
@@ -522,7 +521,7 @@ const AdminDashboard = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Interview Date
-                    </label>
+                    </label>{" "}
                     <input
                       type="date"
                       value={scheduleData.interviewDate}
@@ -533,14 +532,14 @@ const AdminDashboard = () => {
                         }))
                       }
                       required={!scheduleData.immediate}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Interview Time
-                    </label>
+                    </label>{" "}
                     <input
                       type="time"
                       value={scheduleData.interviewTime}
@@ -551,7 +550,7 @@ const AdminDashboard = () => {
                         }))
                       }
                       required={!scheduleData.immediate}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                     />
                   </div>
                 </>
@@ -604,6 +603,7 @@ const AdminDashboard = () => {
             </h3>
 
             <form onSubmit={handlePasswordUpdate} className="space-y-4">
+              {" "}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Current Password
@@ -614,10 +614,9 @@ const AdminDashboard = () => {
                   value={passwordData.oldPassword}
                   onChange={handlePasswordChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   New Password
@@ -628,10 +627,9 @@ const AdminDashboard = () => {
                   value={passwordData.newPassword}
                   onChange={handlePasswordChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Confirm New Password
@@ -642,10 +640,9 @@ const AdminDashboard = () => {
                   value={passwordData.confirmPassword}
                   onChange={handlePasswordChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 />
               </div>
-
               <div className="flex space-x-3 pt-4">
                 <button
                   type="submit"
