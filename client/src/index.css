@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Professional Dark Theme Styles */
+@layer base {
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+      "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+      "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #0f172a;
+    color: #f1f5f9;
+  }
+
+  html {
+    background-color: #0f172a;
+  }
+}
+
+/* Professional Components */
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary to-blue-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+
+  .btn-secondary {
+    @apply bg-surface border border-border text-text font-semibold hover:bg-surface/80 transition-all duration-300;
+  }
+
+  .card-surface {
+    @apply bg-surface border border-border shadow-lg hover:shadow-glow transition-all duration-300;
+  }
+
+  .navbar-professional {
+    @apply bg-gradient-to-r from-background to-surface border-b border-border shadow-lg backdrop-blur-lg;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent;
+  }
+
+  .bg-gradient-professional {
+    @apply bg-gradient-to-br from-background via-surface to-background;
+  }
+
+  .shadow-glow {
+    box-shadow: 0 10px 40px rgba(59, 130, 246, 0.15),
+      0 4px 20px rgba(59, 130, 246, 0.1);
+  }
+
+  .glass-effect {
+    backdrop-filter: blur(16px);
+    background: rgba(30, 41, 59, 0.8);
+  }
+}
+
+/* Enhanced utilities and animations */
+@layer utilities {
+  .text-force-white {
+    color: #f1f5f9 !important;
+  }
+
+  .text-professional {
+    color: #f1f5f9 !important;
+  }
+
+  .navbar-link {
+    color: #f1f5f9 !important;
+    transition: all 0.3s ease;
+  }
+
+  .navbar-link:hover {
+    color: #3b82f6 !important;
+    transform: translateY(-1px);
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slideUp {
+    animation: slideUp 0.6s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  }
+}
