@@ -8,10 +8,12 @@ const CandidateProfile = () => {
   const [application, setApplication] = useState(null);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
-
   const [updateData, setUpdateData] = useState({
     experience: "",
     pastCompany: "",
+    tenthMarksheet: null,
+    twelfthMarksheet: null,
+    resume: null,
     aadharCard: null,
   });
 
@@ -32,6 +34,9 @@ const CandidateProfile = () => {
       setUpdateData({
         experience: response.data.experience || "",
         pastCompany: response.data.pastCompany || "",
+        tenthMarksheet: null,
+        twelfthMarksheet: null,
+        resume: null,
         aadharCard: null,
       });
     } catch (error) {
@@ -66,6 +71,15 @@ const CandidateProfile = () => {
       const formData = new FormData();
       formData.append("experience", updateData.experience);
       formData.append("pastCompany", updateData.pastCompany);
+      if (updateData.tenthMarksheet) {
+        formData.append("tenthMarksheet", updateData.tenthMarksheet);
+      }
+      if (updateData.twelfthMarksheet) {
+        formData.append("twelfthMarksheet", updateData.twelfthMarksheet);
+      }
+      if (updateData.resume) {
+        formData.append("resume", updateData.resume);
+      }
       if (updateData.aadharCard) {
         formData.append("aadharCard", updateData.aadharCard);
       }
@@ -321,7 +335,6 @@ const CandidateProfile = () => {
                   placeholder="Describe your experience"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Past Company
@@ -334,11 +347,58 @@ const CandidateProfile = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Previous company name"
                 />
-              </div>
-
+              </div>{" "}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Update Aadhar Card (PDF/JPG)
+                  10th Marksheet (PDF/JPG) -{" "}
+                  {application.documents.tenthMarksheet
+                    ? "Currently uploaded"
+                    : "Not uploaded"}
+                </label>
+                <input
+                  type="file"
+                  name="tenthMarksheet"
+                  onChange={handleUpdateChange}
+                  accept=".pdf,.jpg,.jpeg"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  12th Marksheet (PDF/JPG) -{" "}
+                  {application.documents.twelfthMarksheet
+                    ? "Currently uploaded"
+                    : "Not uploaded"}
+                </label>
+                <input
+                  type="file"
+                  name="twelfthMarksheet"
+                  onChange={handleUpdateChange}
+                  accept=".pdf,.jpg,.jpeg"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Resume (PDF/JPG) -{" "}
+                  {application.documents.resume
+                    ? "Currently uploaded"
+                    : "Not uploaded"}
+                </label>
+                <input
+                  type="file"
+                  name="resume"
+                  onChange={handleUpdateChange}
+                  accept=".pdf,.jpg,.jpeg"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Aadhar Card (PDF/JPG) -{" "}
+                  {application.documents.aadharCard
+                    ? "Currently uploaded"
+                    : "Not uploaded"}
                 </label>
                 <input
                   type="file"
@@ -348,7 +408,6 @@ const CandidateProfile = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-
               <div className="flex space-x-3">
                 <button
                   type="submit"

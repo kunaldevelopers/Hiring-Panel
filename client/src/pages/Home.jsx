@@ -1,7 +1,25 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { jobPositionAPI } from "../utils/api";
 
 const Home = () => {
+  const [jobPositions, setJobPositions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchJobPositions = async () => {
+      try {
+        const response = await jobPositionAPI.getPositions();
+        setJobPositions(response.data);
+      } catch (error) {
+        console.error("Failed to fetch job positions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobPositions();
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-professional">
       {" "}
@@ -143,89 +161,153 @@ const Home = () => {
               We're hiring across multiple departments. Find the perfect role
               for your skills and interests in our growing team.
             </p>
-          </div>
-
+          </div>{" "}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Cyber Security",
-                description:
-                  "Protect digital assets and infrastructure with cutting-edge security solutions",
-                icon: "🔒",
-                gradient: "from-red-500/20 to-orange-500/20",
-                iconBg: "bg-red-500/10 text-red-400",
-              },
-              {
-                title: "Web Development",
-                description:
-                  "Build amazing web applications using modern frameworks and technologies",
-                icon: "🌐",
-                gradient: "from-blue-500/20 to-cyan-500/20",
-                iconBg: "bg-blue-500/10 text-blue-400",
-              },
-              {
-                title: "App Development",
-                description:
-                  "Create innovative mobile applications for iOS and Android platforms",
-                icon: "📱",
-                gradient: "from-green-500/20 to-emerald-500/20",
-                iconBg: "bg-green-500/10 text-green-400",
-              },
-              {
-                title: "Full Stack",
-                description:
-                  "Work on both frontend and backend technologies in complete solutions",
-                icon: "⚡",
-                gradient: "from-purple-500/20 to-violet-500/20",
-                iconBg: "bg-purple-500/10 text-purple-400",
-              },
-              {
-                title: "Digital Marketing",
-                description:
-                  "Drive growth through innovative digital channels and marketing strategies",
-                icon: "📈",
-                gradient: "from-yellow-500/20 to-amber-500/20",
-                iconBg: "bg-yellow-500/10 text-yellow-400",
-              },
-              {
-                title: "AI & Automation",
-                description:
-                  "Build intelligent systems and automation solutions for the future",
-                icon: "🤖",
-                gradient: "from-indigo-500/20 to-blue-500/20",
-                iconBg: "bg-indigo-500/10 text-indigo-400",
-              },
-              {
-                title: "Sales Executive",
-                description:
-                  "Drive revenue growth and build lasting client relationships",
-                icon: "💼",
-                gradient: "from-pink-500/20 to-rose-500/20",
-                iconBg: "bg-pink-500/10 text-pink-400",
-              },
-            ].map((position, index) => (
-              <div
-                key={index}
-                className="group card-surface rounded-2xl p-8 transition-all duration-300 hover:shadow-glow hover:scale-105 hover:border-primary/30 relative overflow-hidden"
-              >
+            {loading ? (
+              // Loading skeleton
+              Array.from({ length: 6 }).map((_, index) => (
                 <div
-                  className={`absolute inset-0 bg-gradient-to-br ${position.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
-                ></div>
-                <div className="relative z-10">
-                  <div
-                    className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl ${position.iconBg} mb-6 text-2xl transition-transform group-hover:scale-110`}
-                  >
-                    {position.icon}
-                  </div>
-                  <h3 className="text-xl font-bold text-text mb-3 group-hover:text-primary transition-colors">
-                    {position.title}
-                  </h3>
-                  <p className="text-textSecondary leading-relaxed">
-                    {position.description}
-                  </p>
+                  key={index}
+                  className="card-surface rounded-2xl p-8 animate-pulse"
+                >
+                  <div className="h-12 w-12 bg-gray-300 rounded-xl mb-6"></div>
+                  <div className="h-6 bg-gray-300 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-300 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-300 rounded mb-4 w-3/4"></div>
+                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
                 </div>
+              ))
+            ) : jobPositions.length > 0 ? (
+              jobPositions.map((position) => {
+                const iconMap = {
+                  "Cyber Security": "🔒",
+                  "Web Dev": "🌐",
+                  "App Dev": "📱",
+                  "Full Stack": "⚡",
+                  "Digital Marketing": "📊",
+                  "AI & Automation": "🤖",
+                  "Sales Executive": "�",
+                  Other: "💡",
+                };
+
+                const gradientMap = {
+                  "Cyber Security": "from-red-500/20 to-orange-500/20",
+                  "Web Dev": "from-blue-500/20 to-cyan-500/20",
+                  "App Dev": "from-green-500/20 to-emerald-500/20",
+                  "Full Stack": "from-purple-500/20 to-violet-500/20",
+                  "Digital Marketing": "from-pink-500/20 to-rose-500/20",
+                  "AI & Automation": "from-indigo-500/20 to-blue-500/20",
+                  "Sales Executive": "from-yellow-500/20 to-amber-500/20",
+                  Other: "from-gray-500/20 to-slate-500/20",
+                };
+
+                const iconBgMap = {
+                  "Cyber Security": "bg-red-500/10 text-red-400",
+                  "Web Dev": "bg-blue-500/10 text-blue-400",
+                  "App Dev": "bg-green-500/10 text-green-400",
+                  "Full Stack": "bg-purple-500/10 text-purple-400",
+                  "Digital Marketing": "bg-pink-500/10 text-pink-400",
+                  "AI & Automation": "bg-indigo-500/10 text-indigo-400",
+                  "Sales Executive": "bg-yellow-500/10 text-yellow-400",
+                  Other: "bg-gray-500/10 text-gray-400",
+                };
+
+                return (
+                  <div
+                    key={position._id}
+                    className={`group card-surface rounded-2xl p-8 hover-lift cursor-pointer transition-all duration-300 bg-gradient-to-br ${
+                      gradientMap[position.title] || gradientMap["Other"]
+                    }`}
+                  >
+                    <div
+                      className={`w-12 h-12 rounded-xl ${
+                        iconBgMap[position.title] || iconBgMap["Other"]
+                      } flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      {iconMap[position.title] || iconMap["Other"]}
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xl font-semibold text-text group-hover:text-primary transition-colors duration-300">
+                          {position.title}
+                        </h3>
+                        <div className="flex items-center space-x-2">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              position.availablePositions > 0
+                                ? "bg-green-500/20 text-green-400"
+                                : "bg-red-500/20 text-red-400"
+                            }`}
+                          >
+                            {position.availablePositions > 0
+                              ? `${position.availablePositions} available`
+                              : "Full"}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-textSecondary leading-relaxed">
+                        {position.description}
+                      </p>
+                      {position.requirements.length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="text-sm font-medium text-text">
+                            Key Requirements:
+                          </h4>
+                          <ul className="text-sm text-textSecondary space-y-1">
+                            {position.requirements
+                              .slice(0, 2)
+                              .map((req, reqIndex) => (
+                                <li key={reqIndex} className="flex items-start">
+                                  <span className="text-primary mr-2">•</span>
+                                  {req}
+                                </li>
+                              ))}
+                            {position.requirements.length > 2 && (
+                              <li className="text-primary text-xs">
+                                +{position.requirements.length - 2} more
+                                requirements
+                              </li>
+                            )}
+                          </ul>
+                        </div>
+                      )}
+                      <div className="pt-4 border-t border-border">
+                        <Link
+                          to="/apply"
+                          className="inline-flex items-center text-primary hover:text-accent font-medium text-sm group-hover:translate-x-1 transition-all duration-300"
+                        >
+                          Apply Now
+                          <svg
+                            className="ml-1 w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 5l7 7-7 7"
+                            />
+                          </svg>
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              // No positions available
+              <div className="col-span-full text-center py-12">
+                <div className="text-6xl mb-4">💼</div>
+                <h3 className="text-xl font-semibold text-text mb-2">
+                  No Positions Available
+                </h3>
+                <p className="text-textSecondary">
+                  Check back later for new opportunities!
+                </p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

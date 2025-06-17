@@ -222,7 +222,12 @@ router.get("/profile", authMiddleware, async (req, res) => {
 router.patch(
   "/profile",
   authMiddleware,
-  upload.single("aadharCard"),
+  upload.fields([
+    { name: "tenthMarksheet", maxCount: 1 },
+    { name: "twelfthMarksheet", maxCount: 1 },
+    { name: "resume", maxCount: 1 },
+    { name: "aadharCard", maxCount: 1 },
+  ]),
   async (req, res) => {
     try {
       const candidate = await Application.findById(req.user.id);
@@ -236,19 +241,70 @@ router.patch(
       if (experience !== undefined) candidate.experience = experience;
       if (pastCompany !== undefined) candidate.pastCompany = pastCompany;
 
-      // Update Aadhar card if uploaded
-      if (req.file) {
-        // Delete old Aadhar file if exists
-        if (candidate.documents.aadharCard) {
-          const oldFilePath = path.join(
-            uploadsDir,
-            candidate.documents.aadharCard
-          );
-          fs.unlink(oldFilePath, (err) => {
-            if (err) console.error("Error deleting old Aadhar file:", err);
-          });
+      // Update documents if uploaded
+      if (req.files) {
+        // Update tenth marksheet if uploaded
+        if (req.files.tenthMarksheet) {
+          if (candidate.documents.tenthMarksheet) {
+            const oldFilePath = path.join(
+              uploadsDir,
+              candidate.documents.tenthMarksheet
+            );
+            fs.unlink(oldFilePath, (err) => {
+              if (err)
+                console.error("Error deleting old tenth marksheet file:", err);
+            });
+          }
+          candidate.documents.tenthMarksheet =
+            req.files.tenthMarksheet[0].filename;
         }
-        candidate.documents.aadharCard = req.file.filename;
+
+        // Update twelfth marksheet if uploaded
+        if (req.files.twelfthMarksheet) {
+          if (candidate.documents.twelfthMarksheet) {
+            const oldFilePath = path.join(
+              uploadsDir,
+              candidate.documents.twelfthMarksheet
+            );
+            fs.unlink(oldFilePath, (err) => {
+              if (err)
+                console.error(
+                  "Error deleting old twelfth marksheet file:",
+                  err
+                );
+            });
+          }
+          candidate.documents.twelfthMarksheet =
+            req.files.twelfthMarksheet[0].filename;
+        }
+
+        // Update resume if uploaded
+        if (req.files.resume) {
+          if (candidate.documents.resume) {
+            const oldFilePath = path.join(
+              uploadsDir,
+              candidate.documents.resume
+            );
+            fs.unlink(oldFilePath, (err) => {
+              if (err) console.error("Error deleting old resume file:", err);
+            });
+          }
+          candidate.documents.resume = req.files.resume[0].filename;
+        }
+
+        // Update Aadhar card if uploaded
+        if (req.files.aadharCard) {
+          if (candidate.documents.aadharCard) {
+            const oldFilePath = path.join(
+              uploadsDir,
+              candidate.documents.aadharCard
+            );
+            fs.unlink(oldFilePath, (err) => {
+              if (err) console.error("Error deleting old Aadhar file:", err);
+            });
+          }
+          candidate.documents.aadharCard = req.files.aadharCard[0].filename;
+        }
       }
 
       await candidate.save();
