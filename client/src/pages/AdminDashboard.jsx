@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { adminAPI, authAPI } from "../utils/api";
+import { adminAPI, authAPI, jobPositionAPI } from "../utils/api";
 import CandidateBiodataModal from "../components/CandidateBiodataModal";
 import JobPositionManager from "../components/JobPositionManager";
 
@@ -178,6 +178,256 @@ const AdminDashboard = () => {
     }
   };
 
+  const AddJobRoleForm = () => {
+    const [formData, setFormData] = useState({
+      title: "",
+      description: "",
+      requirements: [""],
+      totalPositions: 1,
+      isActive: true,
+    });
+    const [loading, setLoading] = useState(false);
+
+    const handleInputChange = (e) => {
+      const { name, value, type, checked } = e.target;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+    };
+
+    const handleRequirementChange = (index, value) => {
+      const newRequirements = [...formData.requirements];
+      newRequirements[index] = value;
+      setFormData((prev) => ({
+        ...prev,
+        requirements: newRequirements,
+      }));
+    };
+
+    const addRequirement = () => {
+      setFormData((prev) => ({
+        ...prev,
+        requirements: [...prev.requirements, ""],
+      }));
+    };
+
+    const removeRequirement = (index) => {
+      if (formData.requirements.length > 1) {
+        const newRequirements = formData.requirements.filter(
+          (_, i) => i !== index
+        );
+        setFormData((prev) => ({
+          ...prev,
+          requirements: newRequirements,
+        }));
+      }
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+
+      // Filter out empty requirements
+      const cleanRequirements = formData.requirements.filter(
+        (req) => req.trim() !== ""
+      );
+
+      if (cleanRequirements.length === 0) {
+        toast.error("At least one requirement is needed");
+        setLoading(false);
+        return;
+      }
+
+      const submitData = {
+        ...formData,
+        requirements: cleanRequirements,
+      };
+
+      try {
+        await jobPositionAPI.createPosition(submitData);
+        toast.success("Job role created successfully!");
+
+        // Reset form
+        setFormData({
+          title: "",
+          description: "",
+          requirements: [""],
+          totalPositions: 1,
+          isActive: true,
+        });
+      } catch (error) {
+        console.error("Create job role error:", error);
+        toast.error(
+          error.response?.data?.message || "Failed to create job role"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center mb-6">
+            <div className="flex-shrink-0">
+              <div className="flex items-center justify-center h-10 w-10 rounded-md bg-green-500 text-white">
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className="ml-4">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Create New Job Role
+              </h2>
+              <p className="text-gray-600">
+                Add a custom job position that candidates can apply for
+              </p>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Job Role Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                required
+                placeholder="e.g., Video Editor, Content Writer, UI/UX Designer, etc."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Enter any custom job role title. You can create roles like
+                "Photographer", "Video Editor", "Content Writer", etc.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Job Description <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                required
+                rows="4"
+                placeholder="Describe the role, responsibilities, and expectations..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Total Positions Available{" "}
+                <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                name="totalPositions"
+                value={formData.totalPositions}
+                onChange={handleInputChange}
+                min="1"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Requirements <span className="text-red-500">*</span>
+              </label>
+              {formData.requirements.map((requirement, index) => (
+                <div key={index} className="flex space-x-2 mb-2">
+                  <input
+                    type="text"
+                    value={requirement}
+                    onChange={(e) =>
+                      handleRequirementChange(index, e.target.value)
+                    }
+                    placeholder={`Requirement ${index + 1}`}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900"
+                  />
+                  {formData.requirements.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeRequirement(index)}
+                      className="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-200"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addRequirement}
+                className="mt-2 px-3 py-1 bg-gray-500 text-white text-sm rounded-md hover:bg-gray-600 transition duration-200"
+              >
+                Add Another Requirement
+              </button>
+            </div>
+
+            <div>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="isActive"
+                  checked={formData.isActive}
+                  onChange={handleInputChange}
+                  className="mr-2"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  Make this position active immediately
+                </span>
+              </label>
+            </div>
+
+            <div className="flex space-x-4 pt-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 bg-green-600 text-white py-3 px-6 rounded-md hover:bg-green-700 disabled:opacity-50 transition duration-300 font-medium"
+              >
+                {loading ? "Creating..." : "Create Job Role"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData({
+                    title: "",
+                    description: "",
+                    requirements: [""],
+                    totalPositions: 1,
+                    isActive: true,
+                  });
+                }}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition duration-300 font-medium"
+              >
+                Clear Form
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -220,6 +470,7 @@ const AdminDashboard = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {" "}
         {/* Tab Navigation */}
         <div className="bg-white rounded-lg shadow-sm mb-8">
           <div className="border-b border-gray-200">
@@ -244,10 +495,19 @@ const AdminDashboard = () => {
               >
                 Job Positions
               </button>
+              <button
+                onClick={() => setActiveTab("addRole")}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "addRole"
+                    ? "border-green-500 text-green-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                Add Job Role
+              </button>
             </nav>
           </div>
         </div>
-
         {/* Tab Content */}
         {activeTab === "applications" && (
           <>
@@ -484,10 +744,11 @@ const AdminDashboard = () => {
               )}
             </div>
           </>
-        )}
-
+        )}{" "}
         {/* Job Positions Tab */}
         {activeTab === "positions" && <JobPositionManager />}
+        {/* Add Job Role Tab */}
+        {activeTab === "addRole" && <AddJobRoleForm />}
       </div>
 
       {/* Schedule Interview Modal */}

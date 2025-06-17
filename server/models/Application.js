@@ -53,16 +53,8 @@ const applicationSchema = new mongoose.Schema({
   department: {
     type: String,
     required: true,
-    enum: [
-      "Cyber Security",
-      "Web Dev",
-      "App Dev",
-      "Full Stack",
-      "Digital Marketing",
-      "AI & Automation",
-      "Sales Executive",
-      "Other",
-    ],
+    trim: true,
+    maxlength: 100,
   },
   otherDepartment: {
     type: String,

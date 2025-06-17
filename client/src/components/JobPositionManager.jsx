@@ -6,7 +6,6 @@ const JobPositionManager = () => {
   const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingPosition, setEditingPosition] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -84,26 +83,22 @@ const JobPositionManager = () => {
       ...formData,
       requirements: cleanRequirements,
     };
-
     try {
       if (editingPosition) {
         await jobPositionAPI.updatePosition(editingPosition._id, submitData);
         toast.success("Job position updated successfully");
+        setEditingPosition(null);
+        setFormData({
+          title: "",
+          description: "",
+          requirements: [""],
+          totalPositions: 1,
+          isActive: true,
+        });
+        fetchPositions();
       } else {
-        await jobPositionAPI.createPosition(submitData);
-        toast.success("Job position created successfully");
+        toast.error("This modal is only for editing existing positions");
       }
-
-      setShowAddModal(false);
-      setEditingPosition(null);
-      setFormData({
-        title: "",
-        description: "",
-        requirements: [""],
-        totalPositions: 1,
-        isActive: true,
-      });
-      fetchPositions();
     } catch (error) {
       console.error("Submit position error:", error);
       toast.error(
@@ -111,7 +106,6 @@ const JobPositionManager = () => {
       );
     }
   };
-
   const handleEdit = (position) => {
     setEditingPosition(position);
     setFormData({
@@ -122,7 +116,7 @@ const JobPositionManager = () => {
       totalPositions: position.totalPositions,
       isActive: position.isActive,
     });
-    setShowAddModal(true);
+    // Modal will open automatically when editingPosition is set
   };
 
   const handleDelete = async (id) => {
@@ -137,9 +131,7 @@ const JobPositionManager = () => {
       }
     }
   };
-
   const closeModal = () => {
-    setShowAddModal(false);
     setEditingPosition(null);
     setFormData({
       title: "",
@@ -160,19 +152,19 @@ const JobPositionManager = () => {
 
   return (
     <div className="space-y-6">
+      {" "}
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-900">
-          Job Position Management
-        </h2>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300"
-        >
-          Add New Position
-        </button>
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Manage Existing Job Positions
+          </h2>
+          <p className="text-gray-600 text-sm mt-1">
+            View, edit, and delete existing job positions. Use the "Add Job
+            Role" tab to create new positions.
+          </p>
+        </div>
       </div>
-
       {/* Positions Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
@@ -197,102 +189,151 @@ const JobPositionManager = () => {
                 Actions
               </th>
             </tr>
-          </thead>
+          </thead>{" "}
           <tbody className="bg-white divide-y divide-gray-200">
-            {positions.map((position) => (
-              <tr key={position._id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">
-                      {position.title}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {position.description}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {position.totalPositions}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {position.filledPositions}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <span
-                    className={`font-medium ${
-                      position.availablePositions > 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {position.availablePositions}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      position.isActive
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {position.isActive ? "Active" : "Inactive"}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleEdit(position)}
-                      className="text-blue-600 hover:text-blue-900"
+            {positions.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="px-6 py-8 text-center">
+                  <div className="text-gray-500">
+                    <svg
+                      className="mx-auto h-12 w-12 text-gray-400 mb-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(position._id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Delete
-                    </button>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 00-2 2H10a2 2 0 00-2-2V6m8 0h2m-2 0v8a2 2 0 01-2 2H10a2 2 0 01-2-2V6m8 0H8"
+                      />
+                    </svg>{" "}
+                    <h3 className="text-sm font-medium text-gray-900 mb-1">
+                      No job positions yet
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Use the "Add Job Role" tab to create your first job
+                      position.
+                    </p>
                   </div>
                 </td>
               </tr>
-            ))}
+            ) : (
+              positions.map((position) => (
+                <tr key={position._id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {position.title}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {position.description}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {position.totalPositions}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {position.filledPositions}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <span
+                      className={`font-medium ${
+                        position.availablePositions > 0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {position.availablePositions}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        position.isActive
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {position.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </td>{" "}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => handleEdit(position)}
+                        className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
+                      >
+                        <svg
+                          className="w-3 h-3 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(position._id)}
+                        className="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200"
+                      >
+                        <svg
+                          className="w-3 h-3 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>{" "}
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
-      </div>
-
-      {/* Add/Edit Modal */}
-      {showAddModal && (
+      </div>{" "}
+      {/* Edit Modal */}
+      {editingPosition && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            {" "}
             <h3 className="text-lg font-medium text-gray-900 mb-4">
-              {editingPosition ? "Edit Job Position" : "Add New Job Position"}
+              Edit Job Position
             </h3>
-
             <form onSubmit={handleSubmit} className="space-y-4">
+              {" "}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Position Title
-                </label>{" "}
-                <select
+                </label>
+                <input
+                  type="text"
                   name="title"
                   value={formData.title}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                >
-                  <option value="">Select a position</option>
-                  <option value="Cyber Security">Cyber Security</option>
-                  <option value="Web Dev">Web Dev</option>
-                  <option value="App Dev">App Dev</option>
-                  <option value="Full Stack">Full Stack</option>
-                  <option value="Digital Marketing">Digital Marketing</option>
-                  <option value="AI & Automation">AI & Automation</option>
-                  <option value="Sales Executive">Sales Executive</option>
-                  <option value="Other">Other</option>
-                </select>
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-900 cursor-not-allowed"
+                  placeholder="Position title"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Position title cannot be changed when editing. Use "Add Job
+                  Role" tab to create new positions.
+                </p>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description
@@ -307,7 +348,6 @@ const JobPositionManager = () => {
                   placeholder="Brief description of the position"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Total Positions Available
@@ -322,7 +362,6 @@ const JobPositionManager = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Requirements
@@ -358,7 +397,6 @@ const JobPositionManager = () => {
                   Add Requirement
                 </button>
               </div>
-
               <div>
                 <label className="flex items-center">
                   <input
@@ -371,13 +409,13 @@ const JobPositionManager = () => {
                   Active Position
                 </label>
               </div>
-
               <div className="flex space-x-3 pt-4">
+                {" "}
                 <button
                   type="submit"
                   className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition duration-300"
                 >
-                  {editingPosition ? "Update Position" : "Create Position"}
+                  Update Position
                 </button>
                 <button
                   type="button"

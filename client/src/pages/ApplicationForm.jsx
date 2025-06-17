@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { applicationAPI } from "../utils/api";
+import { applicationAPI, jobPositionAPI } from "../utils/api";
 
 const ApplicationForm = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showCredentials, setShowCredentials] = useState(false);
+  const [jobPositions, setJobPositions] = useState([]);
   const [credentials, setCredentials] = useState({
     username: "",
     password: "",
@@ -28,6 +29,25 @@ const ApplicationForm = () => {
     resume: null,
     aadharCard: null,
   });
+
+  // Fetch active job positions on component mount
+  useEffect(() => {
+    fetchJobPositions();
+  }, []);
+
+  const fetchJobPositions = async () => {
+    try {
+      const response = await jobPositionAPI.getAllPositions();
+      const activePositions = response.data.filter(
+        (position) => position.isActive && position.availablePositions > 0
+      );
+      setJobPositions(activePositions);
+    } catch (error) {
+      console.error("Fetch job positions error:", error);
+      // Fallback to default departments if API fails
+      setJobPositions([]);
+    }
+  };
 
   const departments = [
     "Cyber Security",
@@ -312,7 +332,6 @@ const ApplicationForm = () => {
                     placeholder="Enter your full name"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-text mb-2">
                     Email Address <span className="text-red-400">*</span>
@@ -327,7 +346,6 @@ const ApplicationForm = () => {
                     placeholder="Enter your email"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-text mb-2">
                     Phone Number <span className="text-red-400">*</span>
@@ -342,8 +360,7 @@ const ApplicationForm = () => {
                     className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text placeholder-textSecondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
                     placeholder="10-digit phone number"
                   />
-                </div>
-
+                </div>{" "}
                 <div>
                   <label className="block text-sm font-medium text-text mb-2">
                     Department <span className="text-red-400">*</span>
@@ -356,15 +373,37 @@ const ApplicationForm = () => {
                     className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
                   >
                     <option value="">Select Department</option>
-                    {departments.map((dept) => (
-                      <option
-                        key={dept}
-                        value={dept}
-                        className="bg-background text-text"
-                      >
-                        {dept}
-                      </option>
-                    ))}
+
+                    {/* Dynamic Job Positions (with available positions) */}
+                    {jobPositions.length > 0 && (
+                      <optgroup label="Available Positions">
+                        {jobPositions.map((position) => (
+                          <option
+                            key={position._id}
+                            value={position.title}
+                            className="bg-background text-text"
+                          >
+                            {position.title} ({position.availablePositions}{" "}
+                            available)
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+
+                    {/* Fallback to default departments if no positions loaded */}
+                    {jobPositions.length === 0 && (
+                      <>
+                        {departments.map((dept) => (
+                          <option
+                            key={dept}
+                            value={dept}
+                            className="bg-background text-text"
+                          >
+                            {dept}
+                          </option>
+                        ))}
+                      </>
+                    )}
                   </select>
                 </div>
               </div>
