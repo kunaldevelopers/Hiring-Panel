@@ -1,14 +1,75 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { jobPositionAPI } from "../utils/api";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import * as solidIcons from "@fortawesome/free-solid-svg-icons";
 
 const JobPositionManager = () => {
+  // Predefined list of 50 FontAwesome icons
+  const predefinedIcons = [
+    { name: "briefcase", icon: solidIcons.faBriefcase, label: "Briefcase" },
+    { name: "code", icon: solidIcons.faCode, label: "Code" },
+    { name: "desktop", icon: solidIcons.faDesktop, label: "Desktop" },
+    { name: "mobile-alt", icon: solidIcons.faMobileAlt, label: "Mobile" },
+    { name: "globe", icon: solidIcons.faGlobe, label: "Globe" },
+    { name: "chart-line", icon: solidIcons.faChartLine, label: "Chart" },
+    { name: "shield-alt", icon: solidIcons.faShieldAlt, label: "Shield" },
+    { name: "robot", icon: solidIcons.faRobot, label: "Robot" },
+    { name: "bolt", icon: solidIcons.faBolt, label: "Bolt" },
+    { name: "lightbulb", icon: solidIcons.faLightbulb, label: "Lightbulb" },
+    { name: "camera", icon: solidIcons.faCamera, label: "Camera" },
+    { name: "video", icon: solidIcons.faVideo, label: "Video" },
+    { name: "pen", icon: solidIcons.faPen, label: "Pen" },
+    { name: "bullseye", icon: solidIcons.faBullseye, label: "Target" },
+    { name: "dollar-sign", icon: solidIcons.faDollarSign, label: "Dollar" },
+    { name: "wrench", icon: solidIcons.faWrench, label: "Wrench" },
+    { name: "heart", icon: solidIcons.faHeart, label: "Heart" },
+    { name: "users", icon: solidIcons.faUsers, label: "Users" },
+    { name: "cog", icon: solidIcons.faCog, label: "Settings" },
+    { name: "search", icon: solidIcons.faSearch, label: "Search" },
+    { name: "envelope", icon: solidIcons.faEnvelope, label: "Mail" },
+    { name: "phone", icon: solidIcons.faPhone, label: "Phone" },
+    { name: "print", icon: solidIcons.faPrint, label: "Print" },
+    { name: "file-alt", icon: solidIcons.faFileAlt, label: "File" },
+    { name: "home", icon: solidIcons.faHome, label: "Home" },
+    { name: "car", icon: solidIcons.faCar, label: "Car" },
+    { name: "plane", icon: solidIcons.faPlane, label: "Plane" },
+    { name: "ship", icon: solidIcons.faShip, label: "Ship" },
+    { name: "truck", icon: solidIcons.faTruck, label: "Truck" },
+    { name: "gamepad", icon: solidIcons.faGamepad, label: "Gaming" },
+    { name: "music", icon: solidIcons.faMusic, label: "Music" },
+    { name: "film", icon: solidIcons.faFilm, label: "Film" },
+    { name: "palette", icon: solidIcons.faPalette, label: "Art" },
+    { name: "magic", icon: solidIcons.faMagic, label: "Magic" },
+    { name: "flask", icon: solidIcons.faFlask, label: "Science" },
+    { name: "microscope", icon: solidIcons.faMicroscope, label: "Research" },
+    { name: "calculator", icon: solidIcons.faCalculator, label: "Calculator" },
+    { name: "book", icon: solidIcons.faBook, label: "Book" },
+    {
+      name: "graduation-cap",
+      icon: solidIcons.faGraduationCap,
+      label: "Education",
+    },
+    { name: "university", icon: solidIcons.faUniversity, label: "University" },
+    { name: "hospital", icon: solidIcons.faHospital, label: "Hospital" },
+    { name: "pills", icon: solidIcons.faPills, label: "Medicine" },
+    { name: "stethoscope", icon: solidIcons.faStethoscope, label: "Medical" },
+    { name: "user-md", icon: solidIcons.faUserMd, label: "Doctor" },
+    { name: "building", icon: solidIcons.faBuilding, label: "Building" },
+    { name: "industry", icon: solidIcons.faIndustry, label: "Industry" },
+    { name: "leaf", icon: solidIcons.faLeaf, label: "Nature" },
+    { name: "recycle", icon: solidIcons.faRecycle, label: "Recycle" },
+    { name: "coffee", icon: solidIcons.faCoffee, label: "Coffee" },
+    { name: "store", icon: solidIcons.faStore, label: "Store" },
+  ];
+
   const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingPosition, setEditingPosition] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    icon: "briefcase",
     requirements: [""],
     totalPositions: 1,
     isActive: true,
@@ -20,7 +81,6 @@ const JobPositionManager = () => {
   const fetchPositions = async () => {
     try {
       const response = await jobPositionAPI.getAllPositions();
-      console.log("Fetched positions:", response.data);
       setPositions(response.data);
     } catch (error) {
       console.error("Fetch positions error:", error);
@@ -91,6 +151,7 @@ const JobPositionManager = () => {
         setFormData({
           title: "",
           description: "",
+          icon: "briefcase",
           requirements: [""],
           totalPositions: 1,
           isActive: true,
@@ -111,6 +172,7 @@ const JobPositionManager = () => {
     setFormData({
       title: position.title,
       description: position.description,
+      icon: position.icon || "briefcase",
       requirements:
         position.requirements.length > 0 ? position.requirements : [""],
       totalPositions: position.totalPositions,
@@ -136,6 +198,7 @@ const JobPositionManager = () => {
     setFormData({
       title: "",
       description: "",
+      icon: "briefcase",
       requirements: [""],
       totalPositions: 1,
       isActive: true,
@@ -170,7 +233,11 @@ const JobPositionManager = () => {
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
+              {" "}
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Icon
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Position
                 </th>
@@ -192,9 +259,10 @@ const JobPositionManager = () => {
               </tr>
             </thead>{" "}
             <tbody className="bg-white divide-y divide-gray-200">
+              {" "}
               {positions.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center">
+                  <td colSpan="7" className="px-6 py-8 text-center">
                     <div className="text-gray-500">
                       <svg
                         className="mx-auto h-12 w-12 text-gray-400 mb-4"
@@ -222,6 +290,19 @@ const JobPositionManager = () => {
               ) : (
                 positions.map((position) => (
                   <tr key={position._id}>
+                    {" "}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-lg">
+                        <FontAwesomeIcon
+                          icon={
+                            predefinedIcons.find(
+                              (iconObj) => iconObj.name === position.icon
+                            )?.icon || solidIcons.faBriefcase
+                          }
+                          className="text-gray-600"
+                        />
+                      </div>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
@@ -368,6 +449,63 @@ const JobPositionManager = () => {
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 />
+              </div>
+              {/* Icon Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Role Icon
+                </label>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                      <FontAwesomeIcon
+                        icon={
+                          predefinedIcons.find(
+                            (iconObj) => iconObj.name === formData.icon
+                          )?.icon || solidIcons.faBriefcase
+                        }
+                        className="text-xl text-gray-600"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <span className="text-sm text-gray-600">
+                        Selected:{" "}
+                        {predefinedIcons.find(
+                          (iconObj) => iconObj.name === formData.icon
+                        )?.label || "Briefcase"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-8 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                    {predefinedIcons.map((iconObj) => (
+                      <button
+                        key={iconObj.name}
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            icon: iconObj.name,
+                          }))
+                        }
+                        className={`w-8 h-8 rounded-lg border-2 hover:bg-gray-50 transition-colors flex items-center justify-center ${
+                          formData.icon === iconObj.name
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-300"
+                        }`}
+                        title={iconObj.label}
+                      >
+                        <FontAwesomeIcon
+                          icon={iconObj.icon}
+                          className="text-sm text-gray-600"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Select an icon from the collection above.
+                  </p>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

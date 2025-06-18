@@ -506,25 +506,25 @@ const ApplicationForm = () => {
                     name: "tenthMarksheet",
                     label: "10th Marksheet",
                     required: false,
-                    accept: ".pdf,.jpg,.jpeg",
+                    accept: ".pdf,.jpg,.jpeg,.png",
                   },
                   {
                     name: "twelfthMarksheet",
                     label: "12th Marksheet",
                     required: false,
-                    accept: ".pdf,.jpg,.jpeg",
+                    accept: ".pdf,.jpg,.jpeg,.png",
                   },
                   {
                     name: "resume",
                     label: "Resume",
                     required: true,
-                    accept: ".pdf",
+                    accept: ".pdf,.jpg,.jpeg,.png",
                   },
                   {
                     name: "aadharCard",
                     label: "Aadhar Card",
                     required: false,
-                    accept: ".pdf,.jpg,.jpeg",
+                    accept: ".pdf,.jpg,.jpeg,.png",
                   },
                 ].map((field) => (
                   <div key={field.name} className="space-y-2">

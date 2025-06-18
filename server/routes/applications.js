@@ -30,26 +30,45 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  // Check file types
-  if (file.fieldname === "resume") {
-    // Resume must be PDF only
-    if (file.mimetype === "application/pdf") {
-      cb(null, true);
-    } else {
-      cb(new Error("Resume must be a PDF file"), false);
-    }
+  console.log(
+    `File upload attempt - Field: ${file.fieldname}, Type: ${file.mimetype}, Name: ${file.originalname}`
+  );
+
+  // Allow PDF and JPG files for all document types
+  if (
+    file.mimetype === "application/pdf" ||
+    file.mimetype === "image/jpeg" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/png" // Also allow PNG files
+  ) {
+    console.log(`✓ File accepted: ${file.originalname}`);
+    cb(null, true);
   } else {
-    // Other files can be PDF or JPG
-    if (
-      file.mimetype === "application/pdf" ||
-      file.mimetype === "image/jpeg" ||
-      file.mimetype === "image/jpg"
-    ) {
-      cb(null, true);
-    } else {
-      cb(new Error("File must be PDF or JPG"), false);
-    }
+    console.log(`✗ File rejected: ${file.originalname} (${file.mimetype})`);
+    cb(new Error(`${file.fieldname} must be a PDF, JPG, or PNG file`), false);
   }
+};
+
+// Multer error handling middleware
+const handleMulterError = (err, req, res, next) => {
+  if (err) {
+    console.error("Multer error:", err.message);
+
+    // Clean up any uploaded files
+    if (req.files) {
+      Object.values(req.files).forEach((fileArray) => {
+        fileArray.forEach((file) => {
+          fs.unlink(file.path, (unlinkErr) => {
+            if (unlinkErr) console.error("Error deleting file:", unlinkErr);
+          });
+        });
+      });
+    }
+
+    // Return specific error message
+    return res.status(400).json({ message: err.message });
+  }
+  next();
 };
 
 const upload = multer({
@@ -76,6 +95,7 @@ router.post(
     { name: "resume", maxCount: 1 },
     { name: "aadharCard", maxCount: 1 },
   ]),
+  handleMulterError,
   validateApplicationInput,
   async (req, res) => {
     try {
@@ -188,10 +208,10 @@ router.post(
           });
         });
       }
-
       if (
-        error.message.includes("Resume must be") ||
-        error.message.includes("File must be")
+        error.message.includes("must be a PDF, JPG, or PNG file") ||
+        error.message.includes("File must be") ||
+        error.message.includes("Resume must be")
       ) {
         return res.status(400).json({ message: error.message });
       }
@@ -228,6 +248,7 @@ router.patch(
     { name: "resume", maxCount: 1 },
     { name: "aadharCard", maxCount: 1 },
   ]),
+  handleMulterError,
   async (req, res) => {
     try {
       const candidate = await Application.findById(req.user.id);
@@ -315,6 +336,27 @@ router.patch(
       });
     } catch (error) {
       console.error("Update profile error:", error);
+
+      // Clean up uploaded files if there's an error
+      if (req.files) {
+        Object.values(req.files).forEach((fileArray) => {
+          fileArray.forEach((file) => {
+            fs.unlink(file.path, (err) => {
+              if (err) console.error("Error deleting file:", err);
+            });
+          });
+        });
+      }
+
+      // Handle file validation errors
+      if (
+        error.message.includes("must be a PDF, JPG, or PNG file") ||
+        error.message.includes("File must be") ||
+        error.message.includes("Resume must be")
+      ) {
+        return res.status(400).json({ message: error.message });
+      }
+
       res.status(500).json({ message: "Server error" });
     }
   }

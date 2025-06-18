@@ -1,8 +1,68 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { jobPositionAPI } from "../utils/api";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import * as solidIcons from "@fortawesome/free-solid-svg-icons";
 
 const Home = () => {
+  // Predefined list of 50 FontAwesome icons
+  const predefinedIcons = [
+    { name: "briefcase", icon: solidIcons.faBriefcase, label: "Briefcase" },
+    { name: "code", icon: solidIcons.faCode, label: "Code" },
+    { name: "desktop", icon: solidIcons.faDesktop, label: "Desktop" },
+    { name: "mobile-alt", icon: solidIcons.faMobileAlt, label: "Mobile" },
+    { name: "globe", icon: solidIcons.faGlobe, label: "Globe" },
+    { name: "chart-line", icon: solidIcons.faChartLine, label: "Chart" },
+    { name: "shield-alt", icon: solidIcons.faShieldAlt, label: "Shield" },
+    { name: "robot", icon: solidIcons.faRobot, label: "Robot" },
+    { name: "bolt", icon: solidIcons.faBolt, label: "Bolt" },
+    { name: "lightbulb", icon: solidIcons.faLightbulb, label: "Lightbulb" },
+    { name: "camera", icon: solidIcons.faCamera, label: "Camera" },
+    { name: "video", icon: solidIcons.faVideo, label: "Video" },
+    { name: "pen", icon: solidIcons.faPen, label: "Pen" },
+    { name: "bullseye", icon: solidIcons.faBullseye, label: "Target" },
+    { name: "dollar-sign", icon: solidIcons.faDollarSign, label: "Dollar" },
+    { name: "wrench", icon: solidIcons.faWrench, label: "Wrench" },
+    { name: "heart", icon: solidIcons.faHeart, label: "Heart" },
+    { name: "users", icon: solidIcons.faUsers, label: "Users" },
+    { name: "cog", icon: solidIcons.faCog, label: "Settings" },
+    { name: "search", icon: solidIcons.faSearch, label: "Search" },
+    { name: "envelope", icon: solidIcons.faEnvelope, label: "Mail" },
+    { name: "phone", icon: solidIcons.faPhone, label: "Phone" },
+    { name: "print", icon: solidIcons.faPrint, label: "Print" },
+    { name: "file-alt", icon: solidIcons.faFileAlt, label: "File" },
+    { name: "home", icon: solidIcons.faHome, label: "Home" },
+    { name: "car", icon: solidIcons.faCar, label: "Car" },
+    { name: "plane", icon: solidIcons.faPlane, label: "Plane" },
+    { name: "ship", icon: solidIcons.faShip, label: "Ship" },
+    { name: "truck", icon: solidIcons.faTruck, label: "Truck" },
+    { name: "gamepad", icon: solidIcons.faGamepad, label: "Gaming" },
+    { name: "music", icon: solidIcons.faMusic, label: "Music" },
+    { name: "film", icon: solidIcons.faFilm, label: "Film" },
+    { name: "palette", icon: solidIcons.faPalette, label: "Art" },
+    { name: "magic", icon: solidIcons.faMagic, label: "Magic" },
+    { name: "flask", icon: solidIcons.faFlask, label: "Science" },
+    { name: "microscope", icon: solidIcons.faMicroscope, label: "Research" },
+    { name: "calculator", icon: solidIcons.faCalculator, label: "Calculator" },
+    { name: "book", icon: solidIcons.faBook, label: "Book" },
+    {
+      name: "graduation-cap",
+      icon: solidIcons.faGraduationCap,
+      label: "Education",
+    },
+    { name: "university", icon: solidIcons.faUniversity, label: "University" },
+    { name: "hospital", icon: solidIcons.faHospital, label: "Hospital" },
+    { name: "pills", icon: solidIcons.faPills, label: "Medicine" },
+    { name: "stethoscope", icon: solidIcons.faStethoscope, label: "Medical" },
+    { name: "user-md", icon: solidIcons.faUserMd, label: "Doctor" },
+    { name: "building", icon: solidIcons.faBuilding, label: "Building" },
+    { name: "industry", icon: solidIcons.faIndustry, label: "Industry" },
+    { name: "leaf", icon: solidIcons.faLeaf, label: "Nature" },
+    { name: "recycle", icon: solidIcons.faRecycle, label: "Recycle" },
+    { name: "coffee", icon: solidIcons.faCoffee, label: "Coffee" },
+    { name: "store", icon: solidIcons.faStore, label: "Store" },
+  ];
+
   const [jobPositions, setJobPositions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -179,15 +239,18 @@ const Home = () => {
               ))
             ) : jobPositions.length > 0 ? (
               jobPositions.map((position) => {
-                const iconMap = {
-                  "Cyber Security": "🔒",
-                  "Web Dev": "🌐",
-                  "App Dev": "📱",
-                  "Full Stack": "⚡",
-                  "Digital Marketing": "📊",
-                  "AI & Automation": "🤖",
-                  "Sales Executive": "�",
-                  Other: "💡",
+                // Fallback FontAwesome icon names for existing positions without stored icons
+                const fallbackIconMap = {
+                  "Cyber Security": "shield-alt",
+                  "Web Dev": "globe",
+                  "App Dev": "mobile-alt",
+                  "Full Stack": "bolt",
+                  "Digital Marketing": "chart-line",
+                  "AI & Automation": "robot",
+                  "Sales Executive": "dollar-sign",
+                  "Wild Life": "leaf",
+                  ui: "palette",
+                  Other: "briefcase",
                 };
 
                 const gradientMap = {
@@ -198,6 +261,8 @@ const Home = () => {
                   "Digital Marketing": "from-pink-500/20 to-rose-500/20",
                   "AI & Automation": "from-indigo-500/20 to-blue-500/20",
                   "Sales Executive": "from-yellow-500/20 to-amber-500/20",
+                  "Wild Life": "from-green-600/20 to-emerald-600/20",
+                  ui: "from-purple-600/20 to-indigo-600/20",
                   Other: "from-gray-500/20 to-slate-500/20",
                 };
 
@@ -209,8 +274,18 @@ const Home = () => {
                   "Digital Marketing": "bg-pink-500/10 text-pink-400",
                   "AI & Automation": "bg-indigo-500/10 text-indigo-400",
                   "Sales Executive": "bg-yellow-500/10 text-yellow-400",
+                  "Wild Life": "bg-green-600/10 text-green-400",
+                  ui: "bg-purple-600/10 text-purple-400",
                   Other: "bg-gray-500/10 text-gray-400",
-                };
+                }; // Use stored icon if available, otherwise use fallback based on title, otherwise default
+                const iconName =
+                  position.icon ||
+                  fallbackIconMap[position.title] ||
+                  fallbackIconMap["Other"];
+                const iconObj = predefinedIcons.find(
+                  (icon) => icon.name === iconName
+                );
+                const displayIcon = iconObj?.icon || solidIcons.faBriefcase;
 
                 return (
                   <div
@@ -222,9 +297,12 @@ const Home = () => {
                     <div
                       className={`w-12 h-12 rounded-xl ${
                         iconBgMap[position.title] || iconBgMap["Other"]
-                      } flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform duration-300`}
+                      } flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
                     >
-                      {iconMap[position.title] || iconMap["Other"]}
+                      <FontAwesomeIcon
+                        icon={displayIcon}
+                        className="text-2xl"
+                      />
                     </div>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">

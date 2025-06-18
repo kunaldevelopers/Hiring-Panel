@@ -425,8 +425,9 @@ const CandidateProfile = () => {
                 />
               </div>{" "}
               <div>
+                {" "}
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  10th Marksheet (PDF/JPG) -{" "}
+                  10th Marksheet (PDF/JPG/PNG) -{" "}
                   {application.documents.tenthMarksheet
                     ? "Currently uploaded"
                     : "Not uploaded"}
@@ -435,13 +436,14 @@ const CandidateProfile = () => {
                   type="file"
                   name="tenthMarksheet"
                   onChange={handleUpdateChange}
-                  accept=".pdf,.jpg,.jpeg"
+                  accept=".pdf,.jpg,.jpeg,.png"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
+                {" "}
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  12th Marksheet (PDF/JPG) -{" "}
+                  12th Marksheet (PDF/JPG/PNG) -{" "}
                   {application.documents.twelfthMarksheet
                     ? "Currently uploaded"
                     : "Not uploaded"}
@@ -450,13 +452,14 @@ const CandidateProfile = () => {
                   type="file"
                   name="twelfthMarksheet"
                   onChange={handleUpdateChange}
-                  accept=".pdf,.jpg,.jpeg"
+                  accept=".pdf,.jpg,.jpeg,.png"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
+                {" "}
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Resume (PDF/JPG) -{" "}
+                  Resume (PDF/JPG/PNG) -{" "}
                   {application.documents.resume
                     ? "Currently uploaded"
                     : "Not uploaded"}
@@ -465,13 +468,14 @@ const CandidateProfile = () => {
                   type="file"
                   name="resume"
                   onChange={handleUpdateChange}
-                  accept=".pdf,.jpg,.jpeg"
+                  accept=".pdf,.jpg,.jpeg,.png"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
+                {" "}
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Aadhar Card (PDF/JPG) -{" "}
+                  Aadhar Card (PDF/JPG/PNG) -{" "}
                   {application.documents.aadharCard
                     ? "Currently uploaded"
                     : "Not uploaded"}
@@ -480,7 +484,7 @@ const CandidateProfile = () => {
                   type="file"
                   name="aadharCard"
                   onChange={handleUpdateChange}
-                  accept=".pdf,.jpg,.jpeg"
+                  accept=".pdf,.jpg,.jpeg,.png"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>

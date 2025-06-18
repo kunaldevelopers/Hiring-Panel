@@ -144,24 +144,28 @@ router.patch(
         application.isInstantInterview = true;
       } else {
         if (!interviewDate || !interviewTime) {
-          return res
-            .status(400)
-            .json({
-              message:
-                "Interview date and time are required for scheduled interviews",
-            });
-        }
-
-        // Combine date and time
+          return res.status(400).json({
+            message:
+              "Interview date and time are required for scheduled interviews",
+          });
+        } // Combine date and time
         const combinedDateTime = new Date(`${interviewDate}T${interviewTime}`);
 
-        // Validate that the interview is scheduled for future
-        if (combinedDateTime <= new Date()) {
-          return res
-            .status(400)
-            .json({
-              message: "Interview must be scheduled for a future date and time",
-            });
+        // Validate that the date is valid
+        if (isNaN(combinedDateTime.getTime())) {
+          return res.status(400).json({
+            message: "Invalid date or time format",
+          });
+        }
+
+        // Validate that the interview is scheduled for future (with a small buffer for current day)
+        const now = new Date();
+        const currentTimeBuffer = new Date(now.getTime() - 5 * 60000); // 5 minutes buffer
+
+        if (combinedDateTime <= currentTimeBuffer) {
+          return res.status(400).json({
+            message: `Interview must be scheduled for a future date and time. Current time: ${now.toLocaleString()}`,
+          });
         }
 
         application.interviewDate = combinedDateTime;

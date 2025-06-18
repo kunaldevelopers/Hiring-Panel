@@ -11,6 +11,11 @@ const jobPositionSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  icon: {
+    type: String,
+    default: "briefcase", // Default FontAwesome icon name
+    maxlength: 50,
+  },
   requirements: [
     {
       type: String,

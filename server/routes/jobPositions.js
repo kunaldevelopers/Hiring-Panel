@@ -14,7 +14,27 @@ router.get("/", async (req, res) => {
       createdAt: -1,
     });
 
-    res.json(positions);
+    // Add fallback FontAwesome icon names for positions without icons
+    const fallbackIcons = {
+      "Cyber Security": "shield-alt",
+      "Web Dev": "globe",
+      "App Dev": "mobile-alt",
+      "Full Stack": "bolt",
+      "Digital Marketing": "chart-line",
+      "AI & Automation": "robot",
+      "Sales Executive": "dollar-sign",
+    };
+
+    const positionsWithIcons = positions.map((position) => {
+      const positionObj = position.toObject();
+      // Only set fallback if icon is truly missing or empty
+      if (!positionObj.icon || positionObj.icon.trim() === "") {
+        positionObj.icon = fallbackIcons[positionObj.title] || "briefcase";
+      }
+      return positionObj;
+    });
+
+    res.json(positionsWithIcons);
   } catch (error) {
     console.error("Get job positions error:", error);
     res.status(500).json({ message: "Server error" });
@@ -26,7 +46,27 @@ router.get("/admin", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const positions = await JobPosition.find().sort({ createdAt: -1 });
 
-    res.json(positions);
+    // Add fallback FontAwesome icon names for positions without icons
+    const fallbackIcons = {
+      "Cyber Security": "shield-alt",
+      "Web Dev": "globe",
+      "App Dev": "mobile-alt",
+      "Full Stack": "bolt",
+      "Digital Marketing": "chart-line",
+      "AI & Automation": "robot",
+      "Sales Executive": "dollar-sign",
+    };
+
+    const positionsWithIcons = positions.map((position) => {
+      const positionObj = position.toObject();
+      // Only set fallback if icon is truly missing or empty
+      if (!positionObj.icon || positionObj.icon.trim() === "") {
+        positionObj.icon = fallbackIcons[positionObj.title] || "briefcase";
+      }
+      return positionObj;
+    });
+
+    res.json(positionsWithIcons);
   } catch (error) {
     console.error("Get all job positions error:", error);
     res.status(500).json({ message: "Server error" });
@@ -36,7 +76,8 @@ router.get("/admin", authMiddleware, adminMiddleware, async (req, res) => {
 // Create new job position (admin only)
 router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const { title, description, requirements, totalPositions } = req.body;
+    const { title, description, icon, requirements, totalPositions, isActive } =
+      req.body;
 
     // Validate required fields
     if (!title || !description || !requirements || !totalPositions) {
@@ -52,8 +93,10 @@ router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
     const position = new JobPosition({
       title,
       description,
+      icon: icon || "briefcase", // Use provided icon or default to briefcase
       requirements,
       totalPositions: parseInt(totalPositions),
+      isActive: isActive !== undefined ? isActive : true,
     });
 
     await position.save();
@@ -71,7 +114,7 @@ router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
 // Update job position (admin only)
 router.put("/:id", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const { title, description, requirements, totalPositions, isActive } =
+    const { title, description, icon, requirements, totalPositions, isActive } =
       req.body;
 
     const position = await JobPosition.findById(req.params.id);
@@ -82,6 +125,7 @@ router.put("/:id", authMiddleware, adminMiddleware, async (req, res) => {
     // Update fields
     if (title !== undefined) position.title = title;
     if (description !== undefined) position.description = description;
+    if (icon !== undefined) position.icon = icon;
     if (requirements !== undefined) position.requirements = requirements;
     if (totalPositions !== undefined)
       position.totalPositions = parseInt(totalPositions);
