@@ -115,19 +115,17 @@ const ApplicationForm = () => {
     if (formData.department === "Other" && !formData.otherDepartment) {
       toast.error('Please specify the department when selecting "Other"');
       return false;
-    }
+    } // File type validation
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+    ];
 
-    // File type validation
-    if (files.resume && files.resume.type !== "application/pdf") {
-      toast.error("Resume must be a PDF file");
-      return false;
-    }
-
-    // Validate other files if uploaded
-    const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg"];
     for (const [key, file] of Object.entries(files)) {
-      if (file && key !== "resume" && !allowedTypes.includes(file.type)) {
-        toast.error(`${key} must be a PDF or JPG file`);
+      if (file && !allowedTypes.includes(file.type)) {
+        toast.error(`${key} must be a PDF, JPG, or PNG file`);
         return false;
       }
     }
@@ -493,9 +491,9 @@ const ApplicationForm = () => {
                     />
                   </svg>
                   Document Uploads
-                </h3>
+                </h3>{" "}
                 <p className="text-textSecondary text-sm mt-2">
-                  Upload your documents in PDF or JPG format. Resume is
+                  Upload your documents in PDF, JPG, or PNG format. Resume is
                   required.
                 </p>
               </div>

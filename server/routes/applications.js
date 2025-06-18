@@ -31,42 +31,56 @@ const storage = multer.diskStorage({
 
 const fileFilter = (req, file, cb) => {
   console.log(
-    `File upload attempt - Field: ${file.fieldname}, Type: ${file.mimetype}, Name: ${file.originalname}`
+    `📁 File upload attempt - Field: ${file.fieldname}, Type: ${file.mimetype}, Name: ${file.originalname}`
   );
 
-  // Allow PDF and JPG files for all document types
-  if (
-    file.mimetype === "application/pdf" ||
-    file.mimetype === "image/jpeg" ||
-    file.mimetype === "image/jpg" ||
-    file.mimetype === "image/png" // Also allow PNG files
-  ) {
-    console.log(`✓ File accepted: ${file.originalname}`);
+  // Allow PDF, JPG, and PNG files for all document types including resume
+  const allowedMimeTypes = [
+    "application/pdf",
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+  ];
+
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    console.log(`✅ File accepted: ${file.originalname} (${file.mimetype})`);
     cb(null, true);
   } else {
-    console.log(`✗ File rejected: ${file.originalname} (${file.mimetype})`);
-    cb(new Error(`${file.fieldname} must be a PDF, JPG, or PNG file`), false);
+    const errorMessage = `${file.fieldname} must be a PDF, JPG, or PNG file. Received: ${file.mimetype}`;
+    console.log(`❌ File rejected: ${file.originalname} - ${errorMessage}`);
+    cb(new Error(errorMessage), false);
   }
 };
 
 // Multer error handling middleware
 const handleMulterError = (err, req, res, next) => {
   if (err) {
-    console.error("Multer error:", err.message);
+    console.error("🚨 Multer error occurred:", err.message);
+    console.error("🔍 Error details:", {
+      name: err.name,
+      code: err.code,
+      field: err.field,
+      message: err.message,
+    });
 
     // Clean up any uploaded files
     if (req.files) {
+      console.log("🧹 Cleaning up uploaded files due to error...");
       Object.values(req.files).forEach((fileArray) => {
         fileArray.forEach((file) => {
           fs.unlink(file.path, (unlinkErr) => {
             if (unlinkErr) console.error("Error deleting file:", unlinkErr);
+            else console.log(`🗑️ Deleted file: ${file.filename}`);
           });
         });
       });
     }
 
     // Return specific error message
-    return res.status(400).json({ message: err.message });
+    return res.status(400).json({
+      message: err.message,
+      error: "File upload validation failed",
+    });
   }
   next();
 };
@@ -89,12 +103,33 @@ function generateCredentials() {
 // Submit application
 router.post(
   "/submit",
+  (req, res, next) => {
+    console.log("🚀 Application submit route hit");
+    console.log("📝 Request body fields:", Object.keys(req.body));
+    next();
+  },
   upload.fields([
     { name: "tenthMarksheet", maxCount: 1 },
     { name: "twelfthMarksheet", maxCount: 1 },
     { name: "resume", maxCount: 1 },
     { name: "aadharCard", maxCount: 1 },
   ]),
+  (req, res, next) => {
+    console.log(
+      "📎 Files received:",
+      req.files ? Object.keys(req.files) : "No files"
+    );
+    if (req.files) {
+      Object.entries(req.files).forEach(([fieldName, fileArray]) => {
+        fileArray.forEach((file) => {
+          console.log(
+            `📄 ${fieldName}: ${file.originalname} (${file.mimetype})`
+          );
+        });
+      });
+    }
+    next();
+  },
   handleMulterError,
   validateApplicationInput,
   async (req, res) => {
