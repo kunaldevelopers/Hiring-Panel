@@ -124,21 +124,42 @@ const CandidateBiodataModal = ({ candidate, isOpen, onClose }) => {
                   </label>
                   <p className="text-gray-900">{candidate.name}</p>
                 </div>
-
                 <div>
                   <label className="text-sm font-medium text-gray-500">
                     Email Address
                   </label>
                   <p className="text-gray-900">{candidate.email}</p>
-                </div>
-
+                </div>{" "}
                 <div>
                   <label className="text-sm font-medium text-gray-500">
                     Phone Number
                   </label>
                   <p className="text-gray-900">{candidate.phone}</p>
                 </div>
-
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    WhatsApp Number
+                  </label>
+                  <p className="text-gray-900">
+                    {candidate.whatsappNumber || "Not provided"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Current Address
+                  </label>
+                  <p className="text-gray-900">
+                    {candidate.currentAddress || "Not provided"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Permanent Address
+                  </label>
+                  <p className="text-gray-900">
+                    {candidate.permanentAddress || "Same as current address"}
+                  </p>
+                </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">
                     Department
@@ -187,6 +208,43 @@ const CandidateBiodataModal = ({ candidate, isOpen, onClose }) => {
               </div>
             </div>
           </div>
+
+          {/* Banking Information */}
+          {(candidate.bankAccountNumber ||
+            candidate.ifscCode ||
+            candidate.branchName) && (
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-gray-900 border-b pb-2">
+                Banking Information
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Account Number
+                  </label>
+                  <p className="text-gray-900 font-mono text-sm">
+                    {candidate.bankAccountNumber || "Not provided"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    IFSC Code
+                  </label>
+                  <p className="text-gray-900 font-mono text-sm">
+                    {candidate.ifscCode || "Not provided"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Branch Name
+                  </label>
+                  <p className="text-gray-900">
+                    {candidate.branchName || "Not provided"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Documents Section */}
           <div className="space-y-4">
@@ -253,6 +311,35 @@ const CandidateBiodataModal = ({ candidate, isOpen, onClose }) => {
                 </div>
               </div>
 
+              {/* Graduation Marksheet */}
+              <div className="border border-gray-200 rounded-lg p-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h5 className="font-medium text-gray-900">
+                      Graduation Marksheet
+                    </h5>
+                    <p className="text-sm text-gray-500">
+                      {candidate.documents.graduationMarksheet
+                        ? "✅ Uploaded"
+                        : "❌ Not uploaded"}
+                    </p>
+                  </div>
+                  {candidate.documents.graduationMarksheet && (
+                    <button
+                      onClick={() =>
+                        downloadDocument(
+                          candidate.documents.graduationMarksheet,
+                          "Graduation_Marksheet"
+                        )
+                      }
+                      className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                      Download
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {/* Resume */}
               <div className="border border-gray-200 rounded-lg p-4">
                 <div className="flex justify-between items-center">
@@ -268,6 +355,35 @@ const CandidateBiodataModal = ({ candidate, isOpen, onClose }) => {
                     <button
                       onClick={() =>
                         downloadDocument(candidate.documents.resume, "Resume")
+                      }
+                      className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                      Download
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Passport Photo */}
+              <div className="border border-gray-200 rounded-lg p-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h5 className="font-medium text-gray-900">
+                      Passport Photo
+                    </h5>
+                    <p className="text-sm text-gray-500">
+                      {candidate.documents.passportPhoto
+                        ? "✅ Uploaded"
+                        : "❌ Not uploaded"}
+                    </p>
+                  </div>
+                  {candidate.documents.passportPhoto && (
+                    <button
+                      onClick={() =>
+                        downloadDocument(
+                          candidate.documents.passportPhoto,
+                          "Passport_Photo"
+                        )
                       }
                       className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
                     >

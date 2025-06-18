@@ -66,6 +66,9 @@ export const adminAPI = {
     api.patch(`/admin/applications/${id}/status`, { status }),
   scheduleInterview: (id, scheduleData) =>
     api.patch(`/admin/applications/${id}/schedule`, scheduleData),
+  deleteApplication: (id) => api.delete(`/admin/applications/${id}`),
+  bulkDeleteApplications: (ids) =>
+    api.post("/admin/applications/bulk-delete", { ids }),
   getStats: () => api.get("/admin/stats"),
   exportCSV: () => api.get("/admin/export", { responseType: "blob" }),
 };

@@ -278,4 +278,90 @@ router.get("/export", authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
+// Delete single application (admin only)
+router.delete(
+  "/applications/:id",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const application = await Application.findById(req.params.id);
+      if (!application) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+
+      // Optional: Delete associated files
+      const fs = require("fs");
+      const path = require("path");
+      const uploadsDir = path.join(__dirname, "../uploads");
+
+      if (application.documents) {
+        Object.values(application.documents).forEach((filename) => {
+          if (filename) {
+            const filePath = path.join(uploadsDir, filename);
+            fs.unlink(filePath, (err) => {
+              if (err) console.error("Error deleting file:", err);
+            });
+          }
+        });
+      }
+
+      await Application.findByIdAndDelete(req.params.id);
+
+      res.json({ message: "Application deleted successfully" });
+    } catch (error) {
+      console.error("Delete application error:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
+
+// Bulk delete applications (admin only)
+router.post(
+  "/applications/bulk-delete",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const { ids } = req.body;
+
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ message: "No application IDs provided" });
+      }
+
+      // Find applications to get their document filenames
+      const applications = await Application.find({ _id: { $in: ids } });
+
+      // Delete associated files
+      const fs = require("fs");
+      const path = require("path");
+      const uploadsDir = path.join(__dirname, "../uploads");
+
+      applications.forEach((application) => {
+        if (application.documents) {
+          Object.values(application.documents).forEach((filename) => {
+            if (filename) {
+              const filePath = path.join(uploadsDir, filename);
+              fs.unlink(filePath, (err) => {
+                if (err) console.error("Error deleting file:", err);
+              });
+            }
+          });
+        }
+      });
+
+      // Delete applications
+      const result = await Application.deleteMany({ _id: { $in: ids } });
+
+      res.json({
+        message: `${result.deletedCount} applications deleted successfully`,
+        deletedCount: result.deletedCount,
+      });
+    } catch (error) {
+      console.error("Bulk delete applications error:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
+
 module.exports = router;

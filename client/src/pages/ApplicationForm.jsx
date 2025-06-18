@@ -12,22 +12,28 @@ const ApplicationForm = () => {
     username: "",
     password: "",
   });
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
+    whatsappNumber: "",
+    currentAddress: "",
+    permanentAddress: "",
+    bankAccountNumber: "",
+    ifscCode: "",
+    branchName: "",
     experience: "",
     pastCompany: "",
     department: "",
     otherDepartment: "",
   });
-
   const [files, setFiles] = useState({
     tenthMarksheet: null,
     twelfthMarksheet: null,
+    graduationMarksheet: null,
     resume: null,
     aadharCard: null,
+    passportPhoto: null,
   });
 
   // Fetch active job positions on component mount
@@ -85,12 +91,14 @@ const ApplicationForm = () => {
     if (!emailRegex.test(formData.email)) {
       toast.error("Please enter a valid email address");
       return false;
-    }
-
-    // Phone validation (10 digits)
+    } // Phone validation (10 digits)
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(formData.phone)) {
       toast.error("Phone number must be exactly 10 digits");
+      return false;
+    } // WhatsApp number validation (10 digits)
+    if (!phoneRegex.test(formData.whatsappNumber)) {
+      toast.error("WhatsApp number must be exactly 10 digits");
       return false;
     }
 
@@ -99,15 +107,21 @@ const ApplicationForm = () => {
       !formData.name ||
       !formData.email ||
       !formData.phone ||
+      !formData.whatsappNumber ||
+      !formData.currentAddress ||
       !formData.department
     ) {
       toast.error("Please fill in all required fields");
       return false;
-    }
-
-    // Resume is required
+    } // Resume is required
     if (!files.resume) {
       toast.error("Resume is required");
+      return false;
+    }
+
+    // Passport photo is required
+    if (!files.passportPhoto) {
+      toast.error("Passport size photo is required");
       return false;
     }
 
@@ -339,7 +353,7 @@ const ApplicationForm = () => {
                     className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text placeholder-textSecondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
                     placeholder="Enter your email"
                   />
-                </div>
+                </div>{" "}
                 <div>
                   <label className="block text-sm font-medium text-text mb-2">
                     Phone Number <span className="text-red-400">*</span>
@@ -354,7 +368,122 @@ const ApplicationForm = () => {
                     className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text placeholder-textSecondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
                     placeholder="10-digit phone number"
                   />
-                </div>{" "}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    WhatsApp Number <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    name="whatsappNumber"
+                    value={formData.whatsappNumber}
+                    onChange={handleInputChange}
+                    required
+                    maxLength="10"
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text placeholder-textSecondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                    placeholder="10-digit WhatsApp number"
+                  />
+                </div>
+              </div>
+
+              {/* Address Section */}
+              <div className="grid grid-cols-1 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    Current Address <span className="text-red-400">*</span>
+                  </label>
+                  <textarea
+                    name="currentAddress"
+                    value={formData.currentAddress}
+                    onChange={handleInputChange}
+                    required
+                    rows="3"
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text placeholder-textSecondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                    placeholder="Enter your current address"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-text mb-2">
+                    Permanent Address{" "}
+                    <span className="text-gray-400">(Optional)</span>
+                  </label>
+                  <textarea
+                    name="permanentAddress"
+                    value={formData.permanentAddress}
+                    onChange={handleInputChange}
+                    rows="3"
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text placeholder-textSecondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                    placeholder="Enter your permanent address (if different from current)"
+                  />
+                </div>
+              </div>
+
+              {/* Banking Information Section */}
+              <div className="border-t border-border pt-6">
+                <h4 className="text-lg font-medium text-text mb-4 flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2 text-primary"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                    />
+                  </svg>
+                  Banking Information{" "}
+                  <span className="text-gray-400 text-sm font-normal">
+                    (Optional)
+                  </span>
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-2">
+                      Bank Account Number
+                    </label>
+                    <input
+                      type="text"
+                      name="bankAccountNumber"
+                      value={formData.bankAccountNumber}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text placeholder-textSecondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                      placeholder="Enter account number"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-2">
+                      IFSC Code
+                    </label>
+                    <input
+                      type="text"
+                      name="ifscCode"
+                      value={formData.ifscCode}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text placeholder-textSecondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                      placeholder="Enter IFSC code"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-2">
+                      Branch Name
+                    </label>
+                    <input
+                      type="text"
+                      name="branchName"
+                      value={formData.branchName}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-background border border-border rounded-xl text-text placeholder-textSecondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+                      placeholder="Enter branch name"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6">
+                {" "}
                 <div>
                   <label className="block text-sm font-medium text-text mb-2">
                     Department <span className="text-red-400">*</span>
@@ -496,8 +625,7 @@ const ApplicationForm = () => {
                   Upload your documents in PDF, JPG, or PNG format. Resume is
                   required.
                 </p>
-              </div>
-
+              </div>{" "}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[
                   {
@@ -513,10 +641,22 @@ const ApplicationForm = () => {
                     accept: ".pdf,.jpg,.jpeg,.png",
                   },
                   {
+                    name: "graduationMarksheet",
+                    label: "Graduation Marksheet",
+                    required: false,
+                    accept: ".pdf,.jpg,.jpeg,.png",
+                  },
+                  {
                     name: "resume",
                     label: "Resume",
                     required: true,
                     accept: ".pdf,.jpg,.jpeg,.png",
+                  },
+                  {
+                    name: "passportPhoto",
+                    label: "Passport Size Photo",
+                    required: true,
+                    accept: ".jpg,.jpeg,.png",
                   },
                   {
                     name: "aadharCard",

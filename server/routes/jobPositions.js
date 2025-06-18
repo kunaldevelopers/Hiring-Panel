@@ -90,10 +90,34 @@ router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
         .json({ message: "At least one requirement is needed" });
     }
 
+    // Available color schemes for new job positions
+    const colorSchemes = [
+      "red",
+      "blue",
+      "green",
+      "purple",
+      "pink",
+      "indigo",
+      "yellow",
+      "emerald",
+      "cyan",
+      "orange",
+      "teal",
+      "rose",
+      "violet",
+      "amber",
+      "lime",
+    ];
+
+    // Randomly select a color scheme
+    const randomColorScheme =
+      colorSchemes[Math.floor(Math.random() * colorSchemes.length)];
+
     const position = new JobPosition({
       title,
       description,
       icon: icon || "briefcase", // Use provided icon or default to briefcase
+      colorScheme: randomColorScheme, // Randomly assigned color scheme
       requirements,
       totalPositions: parseInt(totalPositions),
       isActive: isActive !== undefined ? isActive : true,
@@ -114,8 +138,15 @@ router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
 // Update job position (admin only)
 router.put("/:id", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const { title, description, icon, requirements, totalPositions, isActive } =
-      req.body;
+    const {
+      title,
+      description,
+      icon,
+      colorScheme,
+      requirements,
+      totalPositions,
+      isActive,
+    } = req.body;
 
     const position = await JobPosition.findById(req.params.id);
     if (!position) {
@@ -126,6 +157,7 @@ router.put("/:id", authMiddleware, adminMiddleware, async (req, res) => {
     if (title !== undefined) position.title = title;
     if (description !== undefined) position.description = description;
     if (icon !== undefined) position.icon = icon;
+    if (colorScheme !== undefined) position.colorScheme = colorScheme;
     if (requirements !== undefined) position.requirements = requirements;
     if (totalPositions !== undefined)
       position.totalPositions = parseInt(totalPositions);

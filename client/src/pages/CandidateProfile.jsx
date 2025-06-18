@@ -7,15 +7,29 @@ const CandidateProfile = () => {
   const [updating, setUpdating] = useState(false);
   const [application, setApplication] = useState(null);
   const [showPasswordChange, setShowPasswordChange] = useState(false);
-  const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [showUsernameChange, setShowUsernameChange] = useState(false);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [updateData, setUpdateData] = useState({
+    // Contact Information
+    phone: "",
+    whatsappNumber: "",
+    // Address Information
+    currentAddress: "",
+    permanentAddress: "",
+    // Banking Information
+    bankAccountNumber: "",
+    ifscCode: "",
+    branchName: "",
+    // Professional Information
     experience: "",
     pastCompany: "",
+    // Documents
     tenthMarksheet: null,
     twelfthMarksheet: null,
+    graduationMarksheet: null,
     resume: null,
     aadharCard: null,
+    passportPhoto: null,
   });
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
@@ -37,12 +51,26 @@ const CandidateProfile = () => {
       const response = await applicationAPI.getProfile();
       setApplication(response.data);
       setUpdateData({
+        // Contact Information
+        phone: response.data.phone || "",
+        whatsappNumber: response.data.whatsappNumber || "",
+        // Address Information
+        currentAddress: response.data.currentAddress || "",
+        permanentAddress: response.data.permanentAddress || "",
+        // Banking Information
+        bankAccountNumber: response.data.bankAccountNumber || "",
+        ifscCode: response.data.ifscCode || "",
+        branchName: response.data.branchName || "",
+        // Professional Information
         experience: response.data.experience || "",
         pastCompany: response.data.pastCompany || "",
+        // Documents (reset to null for updates)
         tenthMarksheet: null,
         twelfthMarksheet: null,
+        graduationMarksheet: null,
         resume: null,
         aadharCard: null,
+        passportPhoto: null,
       });
     } catch (error) {
       console.error("Fetch profile error:", error);
@@ -80,22 +108,42 @@ const CandidateProfile = () => {
     e.preventDefault();
     setUpdating(true);
 
+    // Validate form data
+    const isValid = validateUpdateForm();
+    if (!isValid) {
+      setUpdating(false);
+      return;
+    }
+
     try {
       const formData = new FormData();
+
+      // Add text fields
+      formData.append("phone", updateData.phone);
+      formData.append("whatsappNumber", updateData.whatsappNumber);
+      formData.append("currentAddress", updateData.currentAddress);
+      formData.append("permanentAddress", updateData.permanentAddress);
+      formData.append("bankAccountNumber", updateData.bankAccountNumber);
+      formData.append("ifscCode", updateData.ifscCode);
+      formData.append("branchName", updateData.branchName);
       formData.append("experience", updateData.experience);
       formData.append("pastCompany", updateData.pastCompany);
-      if (updateData.tenthMarksheet) {
-        formData.append("tenthMarksheet", updateData.tenthMarksheet);
-      }
-      if (updateData.twelfthMarksheet) {
-        formData.append("twelfthMarksheet", updateData.twelfthMarksheet);
-      }
-      if (updateData.resume) {
-        formData.append("resume", updateData.resume);
-      }
-      if (updateData.aadharCard) {
-        formData.append("aadharCard", updateData.aadharCard);
-      }
+
+      // Add files if they exist
+      const documentFields = [
+        "tenthMarksheet",
+        "twelfthMarksheet",
+        "graduationMarksheet",
+        "resume",
+        "aadharCard",
+        "passportPhoto",
+      ];
+
+      documentFields.forEach((field) => {
+        if (updateData[field]) {
+          formData.append(field, updateData[field]);
+        }
+      });
 
       await applicationAPI.updateProfile(formData);
       toast.success("Profile updated successfully");
@@ -145,8 +193,8 @@ const CandidateProfile = () => {
   const handleUsernameUpdate = async (e) => {
     e.preventDefault();
 
-    if (!usernameData.newUsername.trim()) {
-      toast.error("Username cannot be empty");
+    if (!usernameData.newUsername) {
+      toast.error("Please enter a new username");
       return;
     }
 
@@ -156,10 +204,9 @@ const CandidateProfile = () => {
     }
 
     if (!usernameData.password) {
-      toast.error("Password is required to change username");
+      toast.error("Please enter your current password");
       return;
     }
-
     try {
       await authAPI.changeUsername({
         currentUsername: localStorage.getItem("username"),
@@ -176,13 +223,40 @@ const CandidateProfile = () => {
         newUsername: "",
         password: "",
       });
-
-      // Refresh profile to show updated username
       fetchProfile();
     } catch (error) {
       console.error("Change username error:", error);
       toast.error(error.response?.data?.message || "Failed to change username");
     }
+  };
+
+  const validateUpdateForm = () => {
+    // Phone validation (10 digits) - only if provided
+    const phoneRegex = /^[0-9]{10}$/;
+    if (updateData.phone && !phoneRegex.test(updateData.phone)) {
+      toast.error("Phone number must be exactly 10 digits");
+      return false;
+    }
+
+    // WhatsApp number validation (10 digits) - only if provided
+    if (
+      updateData.whatsappNumber &&
+      !phoneRegex.test(updateData.whatsappNumber)
+    ) {
+      toast.error("WhatsApp number must be exactly 10 digits");
+      return false;
+    }
+
+    // IFSC code validation - only if provided
+    if (updateData.ifscCode && updateData.ifscCode.length > 0) {
+      const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+      if (!ifscRegex.test(updateData.ifscCode)) {
+        toast.error("Please enter a valid IFSC code");
+        return false;
+      }
+    }
+
+    return true;
   };
 
   const getStatusColor = (status) => {
@@ -255,7 +329,6 @@ const CandidateProfile = () => {
             </div>
           </div>
         </div>
-
         {/* Application Status */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
@@ -289,13 +362,12 @@ const CandidateProfile = () => {
                 </div>
               )}
           </div>
-        </div>
-
+        </div>{" "}
         {/* Personal Information */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Personal Information
-          </h2>
+          </h2>{" "}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm font-medium text-gray-500">Name</p>
@@ -304,24 +376,22 @@ const CandidateProfile = () => {
             <div>
               <p className="text-sm font-medium text-gray-500">Email</p>
               <p className="text-gray-900">{application.email}</p>
-            </div>{" "}
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Username</p>
+              <p className="text-gray-900">{application.username}</p>
+            </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Phone</p>
               <p className="text-gray-900">{application.phone}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">Username</p>
-              <div className="flex items-center space-x-2">
-                <p className="text-gray-900 font-mono bg-gray-100 px-2 py-1 rounded text-sm">
-                  {application.username}
-                </p>
-                <button
-                  onClick={() => setShowUsernameChange(true)}
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                >
-                  Change
-                </button>
-              </div>
+              <p className="text-sm font-medium text-gray-500">
+                WhatsApp Number
+              </p>
+              <p className="text-gray-900">
+                {application.whatsappNumber || "Not provided"}
+              </p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Department</p>
@@ -345,7 +415,58 @@ const CandidateProfile = () => {
             </div>
           </div>
         </div>
-
+        {/* Address Information */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Address Information
+          </h2>
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-500">
+                Current Address
+              </p>
+              <p className="text-gray-900">
+                {application.currentAddress || "Not provided"}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">
+                Permanent Address
+              </p>
+              <p className="text-gray-900">
+                {application.permanentAddress || "Not provided"}
+              </p>
+            </div>
+          </div>
+        </div>
+        {/* Banking Information */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Banking Information
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <p className="text-sm font-medium text-gray-500">
+                Bank Account Number
+              </p>
+              <p className="text-gray-900">
+                {application.bankAccountNumber || "Not provided"}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">IFSC Code</p>
+              <p className="text-gray-900">
+                {application.ifscCode || "Not provided"}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Branch Name</p>
+              <p className="text-gray-900">
+                {application.branchName || "Not provided"}
+              </p>
+            </div>
+          </div>
+        </div>
         {/* Documents */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
@@ -389,117 +510,262 @@ const CandidateProfile = () => {
               </p>
             </div>
           </div>
-        </div>
-
+        </div>{" "}
         {/* Update Profile Form */}
         {showUpdateForm && (
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
               Update Profile
             </h2>
-            <form onSubmit={handleUpdateProfile} className="space-y-4">
+            <form onSubmit={handleUpdateProfile} className="space-y-6">
+              {/* Contact Information Section */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Experience
-                </label>{" "}
-                <textarea
-                  name="experience"
-                  value={updateData.experience}
-                  onChange={handleUpdateChange}
-                  rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                  placeholder="Describe your experience"
-                />
+                <h3 className="text-lg font-medium text-gray-900 mb-4 border-b border-gray-200 pb-2">
+                  Contact Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number
+                    </label>{" "}
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={updateData.phone}
+                      onChange={handleUpdateChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
+                      placeholder="10-digit phone number"
+                      pattern="[0-9]{10}"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      WhatsApp Number
+                    </label>{" "}
+                    <input
+                      type="tel"
+                      name="whatsappNumber"
+                      value={updateData.whatsappNumber}
+                      onChange={handleUpdateChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
+                      placeholder="10-digit WhatsApp number"
+                      pattern="[0-9]{10}"
+                    />
+                  </div>
+                </div>
               </div>
+
+              {/* Address Information Section */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Past Company
-                </label>{" "}
-                <input
-                  type="text"
-                  name="pastCompany"
-                  value={updateData.pastCompany}
-                  onChange={handleUpdateChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                  placeholder="Previous company name"
-                />
-              </div>{" "}
-              <div>
-                {" "}
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  10th Marksheet (PDF/JPG/PNG) -{" "}
-                  {application.documents.tenthMarksheet
-                    ? "Currently uploaded"
-                    : "Not uploaded"}
-                </label>
-                <input
-                  type="file"
-                  name="tenthMarksheet"
-                  onChange={handleUpdateChange}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <h3 className="text-lg font-medium text-gray-900 mb-4 border-b border-gray-200 pb-2">
+                  Address Information
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Current Address
+                    </label>{" "}
+                    <textarea
+                      name="currentAddress"
+                      value={updateData.currentAddress}
+                      onChange={handleUpdateChange}
+                      rows="3"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
+                      placeholder="Enter your current address"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Permanent Address
+                    </label>{" "}
+                    <textarea
+                      name="permanentAddress"
+                      value={updateData.permanentAddress}
+                      onChange={handleUpdateChange}
+                      rows="3"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
+                      placeholder="Enter your permanent address (if different from current)"
+                    />
+                  </div>
+                </div>
               </div>
+
+              {/* Banking Information Section */}
               <div>
-                {" "}
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  12th Marksheet (PDF/JPG/PNG) -{" "}
-                  {application.documents.twelfthMarksheet
-                    ? "Currently uploaded"
-                    : "Not uploaded"}
-                </label>
-                <input
-                  type="file"
-                  name="twelfthMarksheet"
-                  onChange={handleUpdateChange}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <h3 className="text-lg font-medium text-gray-900 mb-4 border-b border-gray-200 pb-2">
+                  Banking Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bank Account Number
+                    </label>{" "}
+                    <input
+                      type="text"
+                      name="bankAccountNumber"
+                      value={updateData.bankAccountNumber}
+                      onChange={handleUpdateChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
+                      placeholder="Enter account number"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      IFSC Code
+                    </label>{" "}
+                    <input
+                      type="text"
+                      name="ifscCode"
+                      value={updateData.ifscCode}
+                      onChange={handleUpdateChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
+                      placeholder="Enter IFSC code"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Branch Name
+                    </label>{" "}
+                    <input
+                      type="text"
+                      name="branchName"
+                      value={updateData.branchName}
+                      onChange={handleUpdateChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
+                      placeholder="Enter branch name"
+                    />
+                  </div>
+                </div>
               </div>
+
+              {/* Experience Section */}
               <div>
-                {" "}
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Resume (PDF/JPG/PNG) -{" "}
-                  {application.documents.resume
-                    ? "Currently uploaded"
-                    : "Not uploaded"}
-                </label>
-                <input
-                  type="file"
-                  name="resume"
-                  onChange={handleUpdateChange}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <h3 className="text-lg font-medium text-gray-900 mb-4 border-b border-gray-200 pb-2">
+                  Professional Information
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Experience
+                    </label>{" "}
+                    <textarea
+                      name="experience"
+                      value={updateData.experience}
+                      onChange={handleUpdateChange}
+                      rows="3"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
+                      placeholder="Describe your experience"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Past Company
+                    </label>{" "}
+                    <input
+                      type="text"
+                      name="pastCompany"
+                      value={updateData.pastCompany}
+                      onChange={handleUpdateChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
+                      placeholder="Previous company name"
+                    />
+                  </div>
+                </div>
               </div>
+
+              {/* Document Upload Section */}
               <div>
-                {" "}
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Aadhar Card (PDF/JPG/PNG) -{" "}
-                  {application.documents.aadharCard
-                    ? "Currently uploaded"
-                    : "Not uploaded"}
-                </label>
-                <input
-                  type="file"
-                  name="aadharCard"
-                  onChange={handleUpdateChange}
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <h3 className="text-lg font-medium text-gray-900 mb-4 border-b border-gray-200 pb-2">
+                  Update Documents
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      10th Marksheet (PDF/JPG)
+                    </label>
+                    <input
+                      type="file"
+                      name="tenthMarksheet"
+                      onChange={handleUpdateChange}
+                      accept=".pdf,.jpg,.jpeg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-l-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer text-gray-700 cursor-pointer"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      12th Marksheet (PDF/JPG)
+                    </label>
+                    <input
+                      type="file"
+                      name="twelfthMarksheet"
+                      onChange={handleUpdateChange}
+                      accept=".pdf,.jpg,.jpeg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-l-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer text-gray-700 cursor-pointer"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Graduation Marksheet (PDF/JPG)
+                    </label>
+                    <input
+                      type="file"
+                      name="graduationMarksheet"
+                      onChange={handleUpdateChange}
+                      accept=".pdf,.jpg,.jpeg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-l-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer text-gray-700 cursor-pointer"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Resume (PDF/JPG)
+                    </label>
+                    <input
+                      type="file"
+                      name="resume"
+                      onChange={handleUpdateChange}
+                      accept=".pdf,.jpg,.jpeg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-l-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer text-gray-700 cursor-pointer"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Aadhar Card (PDF/JPG)
+                    </label>
+                    <input
+                      type="file"
+                      name="aadharCard"
+                      onChange={handleUpdateChange}
+                      accept=".pdf,.jpg,.jpeg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-l-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer text-gray-700 cursor-pointer"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Passport Photo (JPG)
+                    </label>
+                    <input
+                      type="file"
+                      name="passportPhoto"
+                      onChange={handleUpdateChange}
+                      accept=".jpg,.jpeg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-l-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 file:cursor-pointer text-gray-700 cursor-pointer"
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="flex space-x-3">
+
+              <div className="flex space-x-3 pt-4">
                 <button
                   type="submit"
                   disabled={updating}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition duration-300"
+                  className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition duration-300"
                 >
                   {updating ? "Updating..." : "Update Profile"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowUpdateForm(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-300"
+                  className="px-6 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-300"
                 >
                   Cancel
                 </button>
@@ -507,100 +773,6 @@ const CandidateProfile = () => {
             </form>
           </div>
         )}
-
-        {/* Change Username Form */}
-        {showUsernameChange && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Change Username
-            </h2>
-            <form onSubmit={handleUsernameUpdate} className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-blue-400"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-blue-700">
-                      <strong>Current Username:</strong> {application?.username}
-                    </p>
-                    <p className="text-sm text-blue-600 mt-1">
-                      Choose a unique username that will be used for future
-                      logins.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  New Username
-                </label>{" "}
-                <input
-                  type="text"
-                  name="newUsername"
-                  value={usernameData.newUsername}
-                  onChange={handleUsernameChange}
-                  required
-                  minLength="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                  placeholder="Enter your new username"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Username must be at least 3 characters long
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Current Password (for verification)
-                </label>{" "}
-                <input
-                  type="password"
-                  name="password"
-                  value={usernameData.password}
-                  onChange={handleUsernameChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                  placeholder="Enter your current password"
-                />
-              </div>
-
-              <div className="flex space-x-3 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-300"
-                >
-                  Change Username
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowUsernameChange(false);
-                    setUsernameData({
-                      newUsername: "",
-                      password: "",
-                    });
-                  }}
-                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition duration-300"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
         {/* Change Password Form */}
         {showPasswordChange && (
           <div className="bg-white rounded-lg shadow-md p-6">
@@ -608,7 +780,6 @@ const CandidateProfile = () => {
               Change Password
             </h2>
             <form onSubmit={handlePasswordUpdate} className="space-y-4">
-              {" "}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Current Password
@@ -619,9 +790,10 @@ const CandidateProfile = () => {
                   value={passwordData.oldPassword}
                   onChange={handlePasswordChange}
                   required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   New Password
@@ -633,9 +805,10 @@ const CandidateProfile = () => {
                   onChange={handlePasswordChange}
                   required
                   minLength="6"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Confirm New Password
@@ -647,9 +820,10 @@ const CandidateProfile = () => {
                   onChange={handlePasswordChange}
                   required
                   minLength="6"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
+
               <div className="flex space-x-3">
                 <button
                   type="submit"
@@ -660,6 +834,73 @@ const CandidateProfile = () => {
                 <button
                   type="button"
                   onClick={() => setShowPasswordChange(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+        {/* Change Username Form */}
+        {showUsernameChange && (
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Change Username
+            </h2>
+            <form onSubmit={handleUsernameUpdate} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Current Username
+                </label>
+                <input
+                  type="text"
+                  value={application?.username || ""}
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  New Username
+                </label>
+                <input
+                  type="text"
+                  name="newUsername"
+                  value={usernameData.newUsername}
+                  onChange={handleUsernameChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
+                  placeholder="Enter new username"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Current Password
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={usernameData.password}
+                  onChange={handleUsernameChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
+                  placeholder="Enter your current password"
+                />
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300"
+                >
+                  Change Username
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowUsernameChange(false)}
                   className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition duration-300"
                 >
                   Cancel

@@ -18,9 +18,13 @@ const AdminDashboard = () => {
   });
   const [pagination, setPagination] = useState({});
   const [selectedApplication, setSelectedApplication] = useState(null);
+  const [selectedApplications, setSelectedApplications] = useState([]);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showBiodataModal, setShowBiodataModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [applicationToDelete, setApplicationToDelete] = useState(null);
   const [activeTab, setActiveTab] = useState("applications");
   const [scheduleData, setScheduleData] = useState({
     interviewDate: "",
@@ -127,12 +131,18 @@ const AdminDashboard = () => {
         return "bg-gray-100 text-gray-800";
     }
   };
-
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
-      page: 1, // Reset to first page when filters change
+      page: key === "page" ? value : 1, // Only reset to page 1 for non-pagination changes
+    }));
+  };
+
+  const handlePageChange = (newPage) => {
+    setFilters((prev) => ({
+      ...prev,
+      page: newPage,
     }));
   };
 
@@ -180,6 +190,80 @@ const AdminDashboard = () => {
       console.error("Change password error:", error);
       toast.error(error.response?.data?.message || "Failed to change password");
     }
+  };
+
+  // Selection handlers
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedApplications(applications.map((app) => app._id));
+    } else {
+      setSelectedApplications([]);
+    }
+  };
+
+  const handleSelectApplication = (applicationId) => {
+    setSelectedApplications((prev) => {
+      if (prev.includes(applicationId)) {
+        return prev.filter((id) => id !== applicationId);
+      } else {
+        return [...prev, applicationId];
+      }
+    });
+  };
+
+  // Delete handlers
+  const handleDeleteApplication = (application) => {
+    setApplicationToDelete(application);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteApplication = async () => {
+    try {
+      await adminAPI.deleteApplication(applicationToDelete._id);
+      toast.success(
+        `Application for "${applicationToDelete.name}" deleted successfully`
+      );
+      setShowDeleteModal(false);
+      setApplicationToDelete(null);
+      fetchApplications();
+      fetchStats();
+    } catch (error) {
+      console.error("Delete application error:", error);
+      toast.error("Failed to delete application");
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedApplications.length === 0) {
+      toast.error("Please select applications to delete");
+      return;
+    }
+    setShowBulkDeleteModal(true);
+  };
+
+  const confirmBulkDelete = async () => {
+    try {
+      const response = await adminAPI.bulkDeleteApplications(
+        selectedApplications
+      );
+      toast.success(response.data.message);
+      setShowBulkDeleteModal(false);
+      setSelectedApplications([]);
+      fetchApplications();
+      fetchStats();
+    } catch (error) {
+      console.error("Bulk delete error:", error);
+      toast.error("Failed to delete applications");
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setApplicationToDelete(null);
+  };
+
+  const cancelBulkDelete = () => {
+    setShowBulkDeleteModal(false);
   };
 
   const AddJobRoleForm = () => {
@@ -665,7 +749,6 @@ const AdminDashboard = () => {
                 </p>
               </div>
             </div>
-
             {/* Filters */}
             <div className="bg-white p-6 rounded-lg shadow-md mb-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -720,14 +803,53 @@ const AdminDashboard = () => {
                   </select>
                 </div>
               </div>
-            </div>
-
+            </div>{" "}
+            {/* Bulk Actions */}
+            {selectedApplications.length > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-blue-800 font-medium">
+                    {selectedApplications.length} application(s) selected
+                  </span>
+                  <button
+                    onClick={handleBulkDelete}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-200 flex items-center space-x-2"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                    <span>Delete Selected</span>
+                  </button>
+                </div>
+              </div>
+            )}
             {/* Applications Table */}
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <input
+                          type="checkbox"
+                          checked={
+                            selectedApplications.length ===
+                              applications.length && applications.length > 0
+                          }
+                          onChange={handleSelectAll}
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                      </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Candidate
                       </th>
@@ -744,10 +866,22 @@ const AdminDashboard = () => {
                         Actions
                       </th>
                     </tr>
-                  </thead>
+                  </thead>{" "}
                   <tbody className="bg-white divide-y divide-gray-200">
                     {applications.map((application) => (
                       <tr key={application._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={selectedApplications.includes(
+                              application._id
+                            )}
+                            onChange={() =>
+                              handleSelectApplication(application._id)
+                            }
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
                             <div className="text-sm font-medium text-gray-900">
@@ -786,7 +920,7 @@ const AdminDashboard = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(application.appliedAt).toLocaleDateString()}
-                        </td>
+                        </td>{" "}
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
                             {" "}
@@ -831,45 +965,82 @@ const AdminDashboard = () => {
                             >
                               View Biodata
                             </button>
+                            <button
+                              onClick={() =>
+                                handleDeleteApplication(application)
+                              }
+                              className="text-red-600 hover:text-red-900 text-xs"
+                              title="Delete Application"
+                            >
+                              Delete
+                            </button>
                           </div>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              </div>
-
+              </div>{" "}
               {/* Pagination */}
               {pagination.total > 1 && (
-                <div className="bg-white px-6 py-3 flex items-center justify-between border-t border-gray-200">
-                  <div className="text-sm text-gray-700">
+                <div className="card-surface px-6 py-4 flex items-center justify-between border-t border-gray-700/20">
+                  <div className="text-sm text-textSecondary">
                     Showing page {pagination.current} of {pagination.total} (
                     {pagination.count} total applications)
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-3">
                     <button
                       onClick={() =>
-                        handleFilterChange(
-                          "page",
-                          Math.max(1, filters.page - 1)
-                        )
+                        handlePageChange(Math.max(1, filters.page - 1))
                       }
                       disabled={filters.page === 1}
-                      className="px-3 py-1 text-sm border border-gray-300 rounded disabled:opacity-50"
+                      className={`
+                        px-4 py-2 text-sm font-medium rounded-lg border transition-all duration-200
+                        ${
+                          filters.page === 1
+                            ? "border-gray-600 text-gray-500 cursor-not-allowed bg-gray-800/50"
+                            : "border-primary text-primary hover:bg-primary hover:text-white hover:shadow-lg hover:shadow-primary/25 bg-transparent"
+                        }
+                      `}
                     >
-                      Previous
-                    </button>
+                      ← Previous
+                    </button>{" "}
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-textSecondary">Page</span>
+                      <input
+                        type="number"
+                        min="1"
+                        max={pagination.total}
+                        value={pagination.current}
+                        onChange={(e) => {
+                          const newPage = parseInt(e.target.value);
+                          if (newPage >= 1 && newPage <= pagination.total) {
+                            handlePageChange(newPage);
+                          }
+                        }}
+                        className="w-16 px-2 py-1 text-sm text-center text-gray-900 bg-white border border-gray-300 rounded-md focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      />
+                      <span className="text-sm text-textSecondary">
+                        of {pagination.total}
+                      </span>
+                    </div>
                     <button
                       onClick={() =>
-                        handleFilterChange(
-                          "page",
+                        handlePageChange(
                           Math.min(pagination.total, filters.page + 1)
                         )
                       }
                       disabled={filters.page === pagination.total}
-                      className="px-3 py-1 text-sm border border-gray-300 rounded disabled:opacity-50"
+                      className={`
+                        px-4 py-2 text-sm font-medium rounded-lg border transition-all duration-200
+                        ${
+                          filters.page === pagination.total
+                            ? "border-gray-600 text-gray-500 cursor-not-allowed bg-gray-800/50"
+                            : "border-primary text-primary hover:bg-primary hover:text-white hover:shadow-lg hover:shadow-primary/25 bg-transparent"
+                        }
+                      `}
                     >
-                      Next
+                      Next →
                     </button>
                   </div>
                 </div>
@@ -995,7 +1166,6 @@ const AdminDashboard = () => {
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Change Admin Password
             </h3>
-
             <form onSubmit={handlePasswordUpdate} className="space-y-4">
               {" "}
               <div>
@@ -1059,7 +1229,106 @@ const AdminDashboard = () => {
                   Cancel
                 </button>
               </div>
-            </form>
+            </form>{" "}
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && applicationToDelete && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex items-center mb-4">
+              <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.888-.833-2.598 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Delete Application
+              </h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Are you sure you want to delete the application for{" "}
+                <strong>{applicationToDelete.name}</strong>? This action cannot
+                be undone and will also prevent the candidate from logging in.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={confirmDeleteApplication}
+                  className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-300"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={cancelDelete}
+                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition duration-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Confirmation Modal */}
+      {showBulkDeleteModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex items-center mb-4">
+              <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg
+                  className="h-6 w-6 text-red-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.888-.833-2.598 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Delete Multiple Applications
+              </h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Are you sure you want to delete{" "}
+                <strong>{selectedApplications.length}</strong> selected
+                application(s)? This action cannot be undone and will also
+                prevent the candidates from logging in.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={confirmBulkDelete}
+                  className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-300"
+                >
+                  Delete All
+                </button>
+                <button
+                  onClick={cancelBulkDelete}
+                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition duration-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

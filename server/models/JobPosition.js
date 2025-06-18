@@ -16,6 +16,28 @@ const jobPositionSchema = new mongoose.Schema({
     default: "briefcase", // Default FontAwesome icon name
     maxlength: 50,
   },
+  colorScheme: {
+    type: String,
+    default: "gray", // Default color scheme
+    enum: [
+      "red",
+      "blue",
+      "green",
+      "purple",
+      "pink",
+      "indigo",
+      "yellow",
+      "emerald",
+      "cyan",
+      "orange",
+      "teal",
+      "rose",
+      "violet",
+      "amber",
+      "lime",
+      "gray",
+    ],
+  },
   requirements: [
     {
       type: String,

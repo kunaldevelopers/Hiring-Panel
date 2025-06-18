@@ -111,8 +111,10 @@ router.post(
   upload.fields([
     { name: "tenthMarksheet", maxCount: 1 },
     { name: "twelfthMarksheet", maxCount: 1 },
+    { name: "graduationMarksheet", maxCount: 1 },
     { name: "resume", maxCount: 1 },
     { name: "aadharCard", maxCount: 1 },
+    { name: "passportPhoto", maxCount: 1 },
   ]),
   (req, res, next) => {
     console.log(
@@ -138,14 +140,25 @@ router.post(
         name,
         email,
         phone,
+        whatsappNumber,
+        currentAddress,
+        permanentAddress,
+        bankAccountNumber,
+        ifscCode,
+        branchName,
         experience,
         pastCompany,
         department,
         otherDepartment,
-      } = req.body;
-
-      // Validate required fields
-      if (!name || !email || !phone || !department) {
+      } = req.body; // Validate required fields
+      if (
+        !name ||
+        !email ||
+        !phone ||
+        !whatsappNumber ||
+        !currentAddress ||
+        !department
+      ) {
         return res.status(400).json({ message: "Missing required fields" });
       }
 
@@ -153,14 +166,19 @@ router.post(
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return res.status(400).json({ message: "Invalid email format" });
-      }
-
-      // Validate phone format (10 digits)
+      } // Validate phone format (10 digits)
       const phoneRegex = /^[0-9]{10}$/;
       if (!phoneRegex.test(phone)) {
         return res
           .status(400)
           .json({ message: "Phone number must be 10 digits" });
+      }
+
+      // Validate WhatsApp number format (10 digits)
+      if (!phoneRegex.test(whatsappNumber)) {
+        return res
+          .status(400)
+          .json({ message: "WhatsApp number must be 10 digits" });
       }
 
       // Validate name (only letters and spaces)
@@ -177,11 +195,16 @@ router.post(
         return res
           .status(400)
           .json({ message: "Application with this email already exists" });
-      }
-
-      // Check if resume is uploaded (required)
+      } // Check if resume is uploaded (required)
       if (!req.files || !req.files.resume) {
         return res.status(400).json({ message: "Resume is required" });
+      }
+
+      // Check if passport photo is uploaded (required)
+      if (!req.files || !req.files.passportPhoto) {
+        return res
+          .status(400)
+          .json({ message: "Passport size photo is required" });
       }
 
       // Generate credentials
@@ -189,28 +212,34 @@ router.post(
 
       // Hash password
       const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-      // Prepare documents object
+      const hashedPassword = await bcrypt.hash(password, saltRounds); // Prepare documents object
       const documents = {
         resume: req.files.resume[0].filename,
+        passportPhoto: req.files.passportPhoto[0].filename,
       };
-
       if (req.files.tenthMarksheet) {
         documents.tenthMarksheet = req.files.tenthMarksheet[0].filename;
       }
       if (req.files.twelfthMarksheet) {
         documents.twelfthMarksheet = req.files.twelfthMarksheet[0].filename;
       }
+      if (req.files.graduationMarksheet) {
+        documents.graduationMarksheet =
+          req.files.graduationMarksheet[0].filename;
+      }
       if (req.files.aadharCard) {
         documents.aadharCard = req.files.aadharCard[0].filename;
-      }
-
-      // Create new application
+      } // Create new application
       const newApplication = new Application({
         name,
         email,
         phone,
+        whatsappNumber,
+        currentAddress,
+        permanentAddress: permanentAddress || "",
+        bankAccountNumber: bankAccountNumber || "",
+        ifscCode: ifscCode || "",
+        branchName: branchName || "",
         username,
         password: hashedPassword,
         documents,
@@ -280,8 +309,10 @@ router.patch(
   upload.fields([
     { name: "tenthMarksheet", maxCount: 1 },
     { name: "twelfthMarksheet", maxCount: 1 },
+    { name: "graduationMarksheet", maxCount: 1 },
     { name: "resume", maxCount: 1 },
     { name: "aadharCard", maxCount: 1 },
+    { name: "passportPhoto", maxCount: 1 },
   ]),
   handleMulterError,
   async (req, res) => {
@@ -290,12 +321,49 @@ router.patch(
       if (!candidate) {
         return res.status(404).json({ message: "Application not found" });
       }
-
-      const { experience, pastCompany } = req.body;
-
-      // Update optional fields
+      const {
+        experience,
+        pastCompany,
+        phone,
+        whatsappNumber,
+        currentAddress,
+        permanentAddress,
+        bankAccountNumber,
+        ifscCode,
+        branchName,
+      } = req.body; // Update optional fields
       if (experience !== undefined) candidate.experience = experience;
       if (pastCompany !== undefined) candidate.pastCompany = pastCompany;
+
+      // Validate and update phone number if provided
+      if (phone !== undefined) {
+        const phoneRegex = /^[0-9]{10}$/;
+        if (phone && !phoneRegex.test(phone)) {
+          return res
+            .status(400)
+            .json({ message: "Phone number must be 10 digits" });
+        }
+        candidate.phone = phone;
+      }
+
+      if (whatsappNumber !== undefined) {
+        // Validate WhatsApp number format if provided
+        const phoneRegex = /^[0-9]{10}$/;
+        if (whatsappNumber && !phoneRegex.test(whatsappNumber)) {
+          return res
+            .status(400)
+            .json({ message: "WhatsApp number must be 10 digits" });
+        }
+        candidate.whatsappNumber = whatsappNumber;
+      }
+      if (currentAddress !== undefined)
+        candidate.currentAddress = currentAddress;
+      if (permanentAddress !== undefined)
+        candidate.permanentAddress = permanentAddress;
+      if (bankAccountNumber !== undefined)
+        candidate.bankAccountNumber = bankAccountNumber;
+      if (ifscCode !== undefined) candidate.ifscCode = ifscCode;
+      if (branchName !== undefined) candidate.branchName = branchName;
 
       // Update documents if uploaded
       if (req.files) {
@@ -334,6 +402,25 @@ router.patch(
             req.files.twelfthMarksheet[0].filename;
         }
 
+        // Update graduation marksheet if uploaded
+        if (req.files.graduationMarksheet) {
+          if (candidate.documents.graduationMarksheet) {
+            const oldFilePath = path.join(
+              uploadsDir,
+              candidate.documents.graduationMarksheet
+            );
+            fs.unlink(oldFilePath, (err) => {
+              if (err)
+                console.error(
+                  "Error deleting old graduation marksheet file:",
+                  err
+                );
+            });
+          }
+          candidate.documents.graduationMarksheet =
+            req.files.graduationMarksheet[0].filename;
+        }
+
         // Update resume if uploaded
         if (req.files.resume) {
           if (candidate.documents.resume) {
@@ -346,9 +433,7 @@ router.patch(
             });
           }
           candidate.documents.resume = req.files.resume[0].filename;
-        }
-
-        // Update Aadhar card if uploaded
+        } // Update Aadhar card if uploaded
         if (req.files.aadharCard) {
           if (candidate.documents.aadharCard) {
             const oldFilePath = path.join(
@@ -360,6 +445,22 @@ router.patch(
             });
           }
           candidate.documents.aadharCard = req.files.aadharCard[0].filename;
+        }
+
+        // Update passport photo if uploaded
+        if (req.files.passportPhoto) {
+          if (candidate.documents.passportPhoto) {
+            const oldFilePath = path.join(
+              uploadsDir,
+              candidate.documents.passportPhoto
+            );
+            fs.unlink(oldFilePath, (err) => {
+              if (err)
+                console.error("Error deleting old passport photo file:", err);
+            });
+          }
+          candidate.documents.passportPhoto =
+            req.files.passportPhoto[0].filename;
         }
       }
 

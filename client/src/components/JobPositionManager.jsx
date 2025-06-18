@@ -62,14 +62,19 @@ const JobPositionManager = () => {
     { name: "coffee", icon: solidIcons.faCoffee, label: "Coffee" },
     { name: "store", icon: solidIcons.faStore, label: "Store" },
   ];
-
   const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingPosition, setEditingPosition] = useState(null);
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState({
+    show: false,
+    positionId: null,
+    positionTitle: "",
+  });
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     icon: "briefcase",
+    colorScheme: "blue",
     requirements: [""],
     totalPositions: 1,
     isActive: true,
@@ -173,6 +178,7 @@ const JobPositionManager = () => {
       title: position.title,
       description: position.description,
       icon: position.icon || "briefcase",
+      colorScheme: position.colorScheme || "blue",
       requirements:
         position.requirements.length > 0 ? position.requirements : [""],
       totalPositions: position.totalPositions,
@@ -180,18 +186,34 @@ const JobPositionManager = () => {
     });
     // Modal will open automatically when editingPosition is set
   };
+  const handleDelete = (position) => {
+    setDeleteConfirmModal({
+      show: true,
+      positionId: position._id,
+      positionTitle: position.title,
+    });
+  };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this job position?")) {
-      try {
-        await jobPositionAPI.deletePosition(id);
-        toast.success("Job position deleted successfully");
-        fetchPositions();
-      } catch (error) {
-        console.error("Delete position error:", error);
-        toast.error("Failed to delete job position");
-      }
+  const confirmDelete = async () => {
+    try {
+      await jobPositionAPI.deletePosition(deleteConfirmModal.positionId);
+      toast.success(
+        `"${deleteConfirmModal.positionTitle}" deleted successfully`
+      );
+      setDeleteConfirmModal({
+        show: false,
+        positionId: null,
+        positionTitle: "",
+      });
+      fetchPositions();
+    } catch (error) {
+      console.error("Delete position error:", error);
+      toast.error("Failed to delete job position");
     }
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirmModal({ show: false, positionId: null, positionTitle: "" });
   };
   const closeModal = () => {
     setEditingPosition(null);
@@ -199,6 +221,7 @@ const JobPositionManager = () => {
       title: "",
       description: "",
       icon: "briefcase",
+      colorScheme: "blue",
       requirements: [""],
       totalPositions: 1,
       isActive: true,
@@ -366,9 +389,9 @@ const JobPositionManager = () => {
                             />
                           </svg>
                           Edit
-                        </button>
+                        </button>{" "}
                         <button
-                          onClick={() => handleDelete(position._id)}
+                          onClick={() => handleDelete(position)}
                           className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200"
                         >
                           <svg
@@ -476,7 +499,6 @@ const JobPositionManager = () => {
                       </span>
                     </div>
                   </div>
-
                   <div className="grid grid-cols-8 gap-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
                     {predefinedIcons.map((iconObj) => (
                       <button
@@ -501,9 +523,65 @@ const JobPositionManager = () => {
                         />
                       </button>
                     ))}
-                  </div>
+                  </div>{" "}
                   <p className="text-xs text-gray-500">
                     Select an icon from the collection above.
+                  </p>
+                </div>
+              </div>
+              {/* Color Scheme Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Color Scheme
+                </label>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-8 gap-2">
+                    {[
+                      { name: "red", bg: "bg-red-500", label: "Red" },
+                      { name: "blue", bg: "bg-blue-500", label: "Blue" },
+                      { name: "green", bg: "bg-green-500", label: "Green" },
+                      { name: "purple", bg: "bg-purple-500", label: "Purple" },
+                      { name: "pink", bg: "bg-pink-500", label: "Pink" },
+                      { name: "indigo", bg: "bg-indigo-500", label: "Indigo" },
+                      { name: "yellow", bg: "bg-yellow-500", label: "Yellow" },
+                      {
+                        name: "emerald",
+                        bg: "bg-emerald-500",
+                        label: "Emerald",
+                      },
+                      { name: "cyan", bg: "bg-cyan-500", label: "Cyan" },
+                      { name: "orange", bg: "bg-orange-500", label: "Orange" },
+                      { name: "teal", bg: "bg-teal-500", label: "Teal" },
+                      { name: "rose", bg: "bg-rose-500", label: "Rose" },
+                      { name: "violet", bg: "bg-violet-500", label: "Violet" },
+                      { name: "amber", bg: "bg-amber-500", label: "Amber" },
+                      { name: "lime", bg: "bg-lime-500", label: "Lime" },
+                      { name: "gray", bg: "bg-gray-500", label: "Gray" },
+                    ].map((color) => (
+                      <button
+                        key={color.name}
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            colorScheme: color.name,
+                          }))
+                        }
+                        className={`w-10 h-10 rounded-lg border-2 transition-all duration-200 ${
+                          color.bg
+                        } ${
+                          formData.colorScheme === color.name
+                            ? "border-gray-800 scale-110 shadow-lg"
+                            : "border-gray-300 hover:scale-105"
+                        }`}
+                        title={color.label}
+                      />
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Selected:{" "}
+                    {formData.colorScheme.charAt(0).toUpperCase() +
+                      formData.colorScheme.slice(1)}
                   </p>
                 </div>
               </div>
@@ -570,7 +648,63 @@ const JobPositionManager = () => {
                   Cancel
                 </button>
               </div>
-            </form>
+            </form>{" "}
+          </div>
+        </div>
+      )}
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmModal.show && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+                <svg
+                  className="w-6 h-6 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Delete Job Position
+                </h3>
+                <p className="text-sm text-gray-500">
+                  This action cannot be undone.
+                </p>
+              </div>
+            </div>
+
+            <p className="text-gray-700 mb-6">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">
+                "{deleteConfirmModal.positionTitle}"
+              </span>
+              ? This will permanently remove the job position and all associated
+              data.
+            </p>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={cancelDelete}
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-200"
+              >
+                Delete Position
+              </button>
+            </div>
           </div>
         </div>
       )}

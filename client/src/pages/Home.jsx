@@ -253,31 +253,97 @@ const Home = () => {
                   Other: "briefcase",
                 };
 
-                const gradientMap = {
-                  "Cyber Security": "from-red-500/20 to-orange-500/20",
-                  "Web Dev": "from-blue-500/20 to-cyan-500/20",
-                  "App Dev": "from-green-500/20 to-emerald-500/20",
-                  "Full Stack": "from-purple-500/20 to-violet-500/20",
-                  "Digital Marketing": "from-pink-500/20 to-rose-500/20",
-                  "AI & Automation": "from-indigo-500/20 to-blue-500/20",
-                  "Sales Executive": "from-yellow-500/20 to-amber-500/20",
-                  "Wild Life": "from-green-600/20 to-emerald-600/20",
-                  ui: "from-purple-600/20 to-indigo-600/20",
-                  Other: "from-gray-500/20 to-slate-500/20",
+                // Color scheme mapping - now uses the stored colorScheme field
+                const getColorClasses = (colorScheme) => {
+                  const colorMap = {
+                    red: {
+                      gradient: "from-red-500/20 to-orange-500/20",
+                      iconBg: "bg-red-500/10 text-red-400",
+                    },
+                    blue: {
+                      gradient: "from-blue-500/20 to-cyan-500/20",
+                      iconBg: "bg-blue-500/10 text-blue-400",
+                    },
+                    green: {
+                      gradient: "from-green-500/20 to-emerald-500/20",
+                      iconBg: "bg-green-500/10 text-green-400",
+                    },
+                    purple: {
+                      gradient: "from-purple-500/20 to-violet-500/20",
+                      iconBg: "bg-purple-500/10 text-purple-400",
+                    },
+                    pink: {
+                      gradient: "from-pink-500/20 to-rose-500/20",
+                      iconBg: "bg-pink-500/10 text-pink-400",
+                    },
+                    indigo: {
+                      gradient: "from-indigo-500/20 to-blue-600/20",
+                      iconBg: "bg-indigo-500/10 text-indigo-400",
+                    },
+                    yellow: {
+                      gradient: "from-yellow-500/20 to-amber-500/20",
+                      iconBg: "bg-yellow-500/10 text-yellow-400",
+                    },
+                    emerald: {
+                      gradient: "from-emerald-500/20 to-green-600/20",
+                      iconBg: "bg-emerald-500/10 text-emerald-400",
+                    },
+                    cyan: {
+                      gradient: "from-cyan-500/20 to-blue-500/20",
+                      iconBg: "bg-cyan-500/10 text-cyan-400",
+                    },
+                    orange: {
+                      gradient: "from-orange-500/20 to-red-500/20",
+                      iconBg: "bg-orange-500/10 text-orange-400",
+                    },
+                    teal: {
+                      gradient: "from-teal-500/20 to-cyan-600/20",
+                      iconBg: "bg-teal-500/10 text-teal-400",
+                    },
+                    rose: {
+                      gradient: "from-rose-500/20 to-pink-600/20",
+                      iconBg: "bg-rose-500/10 text-rose-400",
+                    },
+                    violet: {
+                      gradient: "from-violet-500/20 to-purple-600/20",
+                      iconBg: "bg-violet-500/10 text-violet-400",
+                    },
+                    amber: {
+                      gradient: "from-amber-500/20 to-yellow-600/20",
+                      iconBg: "bg-amber-500/10 text-amber-400",
+                    },
+                    lime: {
+                      gradient: "from-lime-500/20 to-green-500/20",
+                      iconBg: "bg-lime-500/10 text-lime-400",
+                    },
+                    gray: {
+                      gradient: "from-gray-500/20 to-slate-500/20",
+                      iconBg: "bg-gray-500/10 text-gray-400",
+                    },
+                  };
+                  return colorMap[colorScheme] || colorMap.gray;
                 };
 
-                const iconBgMap = {
-                  "Cyber Security": "bg-red-500/10 text-red-400",
-                  "Web Dev": "bg-blue-500/10 text-blue-400",
-                  "App Dev": "bg-green-500/10 text-green-400",
-                  "Full Stack": "bg-purple-500/10 text-purple-400",
-                  "Digital Marketing": "bg-pink-500/10 text-pink-400",
-                  "AI & Automation": "bg-indigo-500/10 text-indigo-400",
-                  "Sales Executive": "bg-yellow-500/10 text-yellow-400",
-                  "Wild Life": "bg-green-600/10 text-green-400",
-                  ui: "bg-purple-600/10 text-purple-400",
-                  Other: "bg-gray-500/10 text-gray-400",
-                }; // Use stored icon if available, otherwise use fallback based on title, otherwise default
+                // Use stored colorScheme or fallback for legacy positions
+                const legacyColorMap = {
+                  "Cyber Security": "red",
+                  "Web Dev": "blue",
+                  "App Dev": "green",
+                  "Full Stack": "purple",
+                  "Digital Marketing": "pink",
+                  "AI & Automation": "indigo",
+                  "Sales Executive": "yellow",
+                  "Wild Life": "emerald",
+                  ui: "violet",
+                };
+
+                const colorScheme =
+                  position.colorScheme ||
+                  legacyColorMap[position.title] ||
+                  "gray";
+                const colors = getColorClasses(colorScheme);
+
+                // Use stored icon if available, otherwise use fallback based on title, otherwise default
                 const iconName =
                   position.icon ||
                   fallbackIconMap[position.title] ||
@@ -290,14 +356,10 @@ const Home = () => {
                 return (
                   <div
                     key={position._id}
-                    className={`group card-surface rounded-2xl p-8 hover-lift cursor-pointer transition-all duration-300 bg-gradient-to-br ${
-                      gradientMap[position.title] || gradientMap["Other"]
-                    }`}
+                    className={`group card-surface rounded-2xl p-8 hover-lift cursor-pointer transition-all duration-300 bg-gradient-to-br ${colors.gradient}`}
                   >
                     <div
-                      className={`w-12 h-12 rounded-xl ${
-                        iconBgMap[position.title] || iconBgMap["Other"]
-                      } flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
+                      className={`w-12 h-12 rounded-xl ${colors.iconBg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}
                     >
                       <FontAwesomeIcon
                         icon={displayIcon}

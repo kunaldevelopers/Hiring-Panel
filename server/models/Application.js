@@ -18,6 +18,43 @@ const applicationSchema = new mongoose.Schema({
     required: true,
     match: /^[0-9]{10}$/,
   },
+  whatsappNumber: {
+    type: String,
+    required: true,
+    match: /^[0-9]{10}$/,
+  },
+
+  // Address Information
+  currentAddress: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 500,
+  },
+  permanentAddress: {
+    type: String,
+    default: "",
+    trim: true,
+    maxlength: 500,
+  },
+
+  // Banking Information
+  bankAccountNumber: {
+    type: String,
+    default: "",
+    trim: true,
+  },
+  ifscCode: {
+    type: String,
+    default: "",
+    trim: true,
+    uppercase: true,
+  },
+  branchName: {
+    type: String,
+    default: "",
+    trim: true,
+  },
 
   // Authentication
   username: {
@@ -28,17 +65,20 @@ const applicationSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-  },
-
-  // Documents (file paths)
+  }, // Documents (file paths)
   documents: {
     tenthMarksheet: String,
     twelfthMarksheet: String,
+    graduationMarksheet: String,
     resume: {
       type: String,
       required: true,
     },
     aadharCard: String,
+    passportPhoto: {
+      type: String,
+      required: true,
+    },
   },
 
   // Professional Information
